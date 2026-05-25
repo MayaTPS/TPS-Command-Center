@@ -975,156 +975,76 @@
 
     <!-- MAIN CONTENT -->
     <div class="container">
-        <!-- GREETING BANNER (Sprint 2 / Phase 02) -->
-        <div class="tps-greeting-banner">
-            <div class="greeting-banner-left">
-                <div class="greeting-hi" id="greeting-hi">Good morning</div>
-                <div class="greeting-msg" id="greeting-msg">Connecting to your tasks…</div>
-            </div>
-            <div class="greeting-banner-right">
-                <div class="greeting-chips">
-                    <span class="greeting-chip urgent" id="chip-approval" style="display:none;">0 need approval</span>
-                    <span class="greeting-chip" id="chip-stuck" style="display:none;">0 stuck</span>
-                    <span class="greeting-chip" id="chip-total">0 total</span>
-                </div>
-                <div class="greeting-status-row">
-                    <span id="last-synced-timestamp" class="greeting-timestamp">Last updated: connecting…</span>
-                    <button id="tps-refresh-btn" type="button">↻ Refresh</button>
-                    <span class="greeting-live-indicator">
-                        <span class="greeting-live-dot"></span>
-                        <span class="greeting-live-text">Live</span>
-                    </span>
-                </div>
+        <!-- BRAND HEADER -->
+        <div class="brand-header">
+            <div class="brand-name">TPS Property Management</div>
+            <div class="brand-tagline">"Raising the bar in industry standards"</div>
+        </div>
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h1 class="page-title">Operations Tracker</h1>
+            <div class="page-subtitle-row" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                <span id="last-synced-timestamp" class="page-subtitle" style="margin:0;">Last updated: connecting…</span>
+                <button id="tps-refresh-btn" type="button" style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:1.5px solid #CBB067;border-radius:6px;background:transparent;color:#CBB067;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s ease;">↻ Refresh</button>
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);">
+                    <span style="width:7px;height:7px;border-radius:50%;background:#4CAF50;display:inline-block;animation:tps-pulse 2s infinite;"></span>
+                    <span style="font-weight:600;color:#4CAF50;letter-spacing:.5px;text-transform:uppercase;">Live</span>
+                </span>
             </div>
         </div>
         <style>
-            .tps-greeting-banner {
-                background: linear-gradient(135deg, var(--tps-gold-light) 0%, #F5E6D3 100%);
-                border: 1.5px solid #E8D5C4;
-                border-radius: 12px;
-                padding: 18px 22px;
-                margin: 0 0 28px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 16px;
-                flex-wrap: wrap;
-            }
-            body.dark-mode .tps-greeting-banner {
-                background: linear-gradient(135deg, #2a2418 0%, #1f1a14 100%);
-                border-color: #4a3a25;
-            }
-            .greeting-banner-left { flex: 1; min-width: 250px; }
-            .greeting-hi {
-                font-family: 'Playfair Display', serif;
-                font-size: 1.4em;
-                font-weight: 700;
-                color: var(--text-primary);
-                margin-bottom: 4px;
-                letter-spacing: -0.3px;
-            }
-            .greeting-msg {
-                font-size: 0.85em;
-                color: var(--text-secondary);
-                line-height: 1.45;
-            }
-            .greeting-banner-right {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-end;
-            }
-            .greeting-chips {
-                display: flex;
-                gap: 6px;
-                flex-wrap: wrap;
-                justify-content: flex-end;
-            }
-            .greeting-chip {
-                font-size: 10px;
-                font-weight: 600;
-                padding: 3px 9px;
-                border-radius: 12px;
-                background: #fff;
-                border: 1px solid #E8D5C4;
-                color: var(--text-secondary);
-                white-space: nowrap;
-            }
-            body.dark-mode .greeting-chip { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
-            .greeting-chip.urgent { background: #fff5f5; border-color: #fca5a5; color: #b83a33; }
-            body.dark-mode .greeting-chip.urgent { background: #3a1f1f; border-color: #7a3a30; color: #fca5a5; }
-            .greeting-status-row {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
-                justify-content: flex-end;
-            }
-            .greeting-timestamp {
-                font-size: 11px;
-                color: var(--text-muted);
-            }
-            #tps-refresh-btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 4px 11px;
-                border: 1.5px solid #CBB067;
-                border-radius: 6px;
-                background: transparent;
-                color: #CBB067;
-                font-size: 11px;
-                font-weight: 600;
-                cursor: pointer;
-                font-family: inherit;
-                transition: all .15s ease;
-            }
             #tps-refresh-btn:hover { background: rgba(203,176,103,.1); }
             #tps-refresh-btn:disabled { opacity: 0.6; cursor: wait; }
             #tps-refresh-btn .spin-icon { display: inline-block; animation: tps-spin 1s linear infinite; }
             #tps-refresh-btn.error-state { background: #fcebeb; border-color: #fca5a5; color: #a32d2d; }
-            .greeting-live-indicator {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                font-size: 10px;
-            }
-            .greeting-live-dot {
-                width: 7px; height: 7px;
-                border-radius: 50%;
-                background: #4CAF50;
-                display: inline-block;
-                animation: tps-pulse 2s infinite;
-            }
-            .greeting-live-text {
-                font-weight: 600;
-                color: #4CAF50;
-                letter-spacing: .5px;
-                text-transform: uppercase;
-            }
             @keyframes tps-spin { to { transform: rotate(360deg); } }
             @keyframes tps-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
-            @media (max-width: 640px) {
-                .tps-greeting-banner { flex-direction: column; align-items: stretch; }
-                .greeting-banner-right { align-items: stretch; }
-                .greeting-chips, .greeting-status-row { justify-content: flex-start; }
-            }
         </style>
 
-        <!-- QUICK ACTION CARDS (Sprint 2 / Phase 03 — order: Clock In → Upload → Add Task → My Calendly) -->
+        <!-- QUICK ACTION CARDS -->
         <div class="quick-cards">
             <div class="quick-card">
-                <div class="card-icon">⏰</div>
-                <div class="card-title">Clock In</div>
-                <div class="card-subtitle">Time log + billing</div>
-                <a href="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemVheG1tY2s3OGZ0bXFhYzBlbGp0czEwOTdjMXI4czZ6Nnd6Z3BtZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5xtDarzgzG6eu6uVwI0/giphy.gif" target="_blank" class="unified-btn clock-btn">
-                    <span>Clock In</span>
+                <div class="card-icon">📅</div>
+                <div class="card-title">My Calendly</div>
+                <div class="card-subtitle">Schedule a meeting</div>
+                <a href="https://calendly.com/maya-tpropertysolutions/maya-tricia" target="_blank" class="unified-btn calendly-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Pick a Time</span>
+                </a>
+            </div>
+            <div class="quick-card">
+                <div class="card-icon">💳</div>
+                <div class="card-title">Payment</div>
+                <div class="card-subtitle">Process invoices</div>
+                <a href="https://wise.com/pay/r/U36Y7yWMiwln8YY" target="_blank" class="unified-btn pay-btn">
+                    <div class="icon-container">
+                        <svg class="icon wallet-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 8H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 14H6V10h12v12zm-6-3c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
+                        </svg>
+                        <svg class="icon card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 8H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H4V10h16v10zm-4-6h-2v-2h2v2z"/>
+                        </svg>
+                        <svg class="icon payment-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                        </svg>
+                        <svg class="icon dollar-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                        </svg>
+                        <svg class="icon check-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                        </svg>
+                    </div>
+                    <span>Pay Now</span>
                 </a>
             </div>
             <div class="quick-card">
                 <div class="card-icon">📁</div>
-                <div class="card-title">Upload Files</div>
-                <div class="card-subtitle">Docs & photos</div>
+                <div class="card-title">Expenses & Invoices</div>
+                <div class="card-subtitle">Upload & organize</div>
                 <a href="https://drive.google.com/drive/folders/1udSCvVZGOu7A1faxH65xQHF9kghy1_o4" target="_blank" class="unified-btn upload-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -1134,116 +1054,26 @@
                     <span>Upload</span>
                 </a>
             </div>
-            <div class="quick-card add-task-quick-card">
-                <div class="card-icon">✚</div>
-                <div class="card-title">Add Task</div>
-                <div class="card-subtitle">Type it or voice</div>
-                <button type="button" class="unified-btn add-task-quick-btn" id="quick-add-task">
-                    <span>Add task</span>
-                </button>
-            </div>
             <div class="quick-card">
-                <div class="card-icon">📅</div>
-                <div class="card-title">My Calendly</div>
-                <div class="card-subtitle">Book a meeting</div>
-                <a href="https://calendly.com/maya-tpropertysolutions/maya-tricia" target="_blank" class="unified-btn calendly-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Pick a Time</span>
+                <div class="card-icon">⏰</div>
+                <div class="card-title">Time Tracker</div>
+                <div class="card-subtitle">Track your time</div>
+                <a href="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemVheG1tY2s3OGZ0bXFhYzBlbGp0czEwOTdjMXI4czZ6Nnd6Z3BtZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5xtDarzgzG6eu6uVwI0/giphy.gif" target="_blank" class="unified-btn clock-btn">
+                    <span>Clock In</span>
                 </a>
             </div>
         </div>
-        <style>
-            /* Add Task card — gold-accented to draw the eye (Phase 03 spec) */
-            .add-task-quick-card {
-                border-color: var(--tps-yellow) !important;
-                box-shadow: 0 0 0 0 rgba(203, 176, 103, 0);
-                transition: all 0.3s ease;
-            }
-            .add-task-quick-card:hover {
-                box-shadow: 0 0 20px rgba(203, 176, 103, 0.35);
-                border-color: var(--tps-yellow) !important;
-            }
-            .add-task-quick-btn {
-                background: var(--tps-yellow);
-                color: #fff;
-                border-color: var(--tps-yellow);
-                font-weight: 600;
-            }
-            .add-task-quick-btn:hover {
-                background: #b89a55;
-                border-color: #b89a55;
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(203, 176, 103, 0.35);
-            }
-        </style>
 
-        <!-- ALL DONE ✓ BOX (renamed from Quick Wins — Sprint 2 / Phase 09) -->
+        <!-- QUICK WINS BOX -->
         <div class="wins-box">
             <div class="wins-header">
-                <div class="wins-title">All Done ✓</div>
-                <div class="wins-subtitle">Last 6 completed</div>
+                <div class="wins-title">Quick Wins</div>
+                <div class="wins-subtitle">Closed Items</div>
             </div>
             <div class="wins-grid" id="tasks-quick-wins">
                 <div class="empty-state">Loading…</div>
             </div>
         </div>
-
-        <!-- FILTER BAR (Sprint 2 / Phase 04 — client-side filter, no backend call) -->
-        <div class="tps-filter-bar" id="tps-filter-bar" role="tablist" aria-label="Task status filter">
-            <button class="tps-filter-btn active" data-filter="all" role="tab">All</button>
-            <button class="tps-filter-btn" data-filter="New" role="tab">New</button>
-            <button class="tps-filter-btn" data-filter="Needs Approval" role="tab">Approval</button>
-            <button class="tps-filter-btn" data-filter="In Progress" role="tab">In Progress</button>
-            <button class="tps-filter-btn" data-filter="Maya Needs Help" role="tab">Maya Needs Help</button>
-            <button class="tps-filter-btn" data-filter="Stuck" role="tab">Stuck</button>
-            <button class="tps-filter-btn" data-filter="FYI Only" role="tab">FYI</button>
-        </div>
-        <style>
-            .tps-filter-bar {
-                display: flex;
-                gap: 6px;
-                flex-wrap: wrap;
-                padding: 12px 0 20px;
-                margin-bottom: 8px;
-                overflow-x: auto;
-            }
-            .tps-filter-btn {
-                padding: 6px 14px;
-                border-radius: 20px;
-                border: 1px solid var(--border);
-                background: var(--bg-primary);
-                color: var(--text-secondary);
-                font-size: 12px;
-                font-weight: 500;
-                cursor: pointer;
-                font-family: inherit;
-                white-space: nowrap;
-                transition: all 0.15s ease;
-            }
-            .tps-filter-btn:hover {
-                border-color: var(--tps-yellow);
-                color: var(--tps-yellow);
-            }
-            .tps-filter-btn.active {
-                background: var(--tps-yellow);
-                color: #fff;
-                border-color: var(--tps-yellow);
-                font-weight: 600;
-            }
-            body.dark-mode .tps-filter-btn { background: rgba(255,255,255,0.04); }
-            body.dark-mode .tps-filter-btn.active { background: var(--tps-yellow); color: #fff; }
-            /* Hide category sections that have no visible tasks under the current filter */
-            .category-section.filter-empty { display: none; }
-            /* Hide individual task items that don't match the filter */
-            .task-item.filter-hidden { display: none; }
-            @media (max-width: 640px) {
-                .tps-filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
-                .tps-filter-btn { flex-shrink: 0; }
-            }
-        </style>
 
         <!-- OPERATIONS & ADMIN SECTION -->
         <div class="category-section">
@@ -1323,4 +1153,33 @@
                     if (e.target.closest('.task-buttons') ||
                         e.target.closest('.task-comment-input') ||
                         e.target.closest('.checkbox-label') ||
-                        e.target.closest('.comment-save-btn') |
+                        e.target.closest('.comment-save-btn') ||
+                        e.target.tagName === 'TEXTAREA' ||
+                        e.target.tagName === 'INPUT') {
+                        return;
+                    }
+
+                    // Collapse/expand on other clicks
+                    toggleExpand(this);
+                });
+            });
+
+            // Prevent event bubbling from textareas
+            document.querySelectorAll('.task-comment-input').forEach(textarea => {
+                textarea.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                textarea.addEventListener('keydown', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+    </script>
+
+    <!-- Silent comms widget (handles button clicks + Add Task wizard) -->
+    <script src="status-widget-client.js"></script>
+
+    <!-- Live tasks (Sprint 1 Phase 1A — replaces Python rebuild with client-side fetch) -->
+    <script src="live-tasks.js"></script>
+</body>
+</html>

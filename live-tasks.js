@@ -1,16 +1,11 @@
-/* TPS Dashboard — Live Tasks (Sprint 1 + Sprint 2)
+/* TPS Dashboard — Live Tasks (Sprint 1, Phase 1A)
  * --------------------------------------------------------------
- * Sprint 1 (Phase 1A): replaced once-a-day Python rebuild with
- *   client-side fetch. On page load + every 5 min, calls getTasks
- *   and getWins, renders into containers, re-wires button handlers.
+ * Replaces the once-a-day Python rebuild with client-side fetch.
+ * On page load + every 5 minutes, calls the Apps Script Web App's
+ * getTasks + getWins endpoints, renders into the placeholder
+ * containers, then re-wires the status-widget-client.js handlers.
  *
- * Sprint 2 additions:
- *   Phase 02 — greeting banner (time/day/person aware + stat chips)
- *   Phase 03 — wires Add Task quick card to status-widget wizard
- *   Phase 04 — filter bar logic (client-side, persists in localStorage)
- *   Phase 09 — already done in HTML (Quick Wins → All Done ✓)
- *
- * Pairs with the merged Apps Script (with getTasks + getWins endpoints).
+ * Pairs with apps-script-additions.gs and the modified index.html.
  * -------------------------------------------------------------- */
 
 (function () {
@@ -19,20 +14,6 @@
   const SECRET_TOKEN = "TPSMAYA4321";
   const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
   const STORAGE_KEY_LAST_SYNCED = "tps-last-synced";
-  const STORAGE_KEY_FILTER = "tps-current-filter";
-  const STORAGE_KEY_ACTOR = "tps-comms:actor"; // matches status-widget-client.js
-  const DEFAULT_VIEWER_NAME = "Maya";
-
-  // Statuses we count for the greeting banner stat chips
-  const APPROVAL_STATUSES = ["Needs Approval", "Approval"];
-  const STUCK_STATUSES = ["Stuck"];
-
-  // Current active filter (persisted in localStorage)
-  let currentFilter = "all";
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY_FILTER);
-    if (stored) currentFilter = stored;
-  } catch (e) {}
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
@@ -174,10 +155,8 @@
         '</div>';
     }
 
-    // data-status is the RAW sheet status — used by Phase 04 filter bar
-    const dataStatus = escapeHtml(task.sheetStatus || "");
     return (
-      '<div class="task-item" data-id="' + id + '" data-status="' + dataStatus + '">' +
+      '<div class="task-item" data-id="' + id + '">' +
         '<div class="task-row">' +
           '<div class="task-info">' +
             '<button class="task-expand-btn">▼</button>' +
@@ -288,174 +267,6 @@
     } catch (e) {}
   }
 
-  // ============================== GREETING BANNER (Phase 02) ==============================
-  /**
-   * Returns the current viewer's first name. Reads from localStorage
-   * (set by status-widget-client.js's actor picker). Defaults to "Maya".
-   */
-  function getViewerName() {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_ACTOR);
-      if (stored && stored.trim()) return stored.trim();
-    } catch (e) {}
-    return DEFAULT_VIEWER_NAME;
-  }
-
-  /**
-   * Time-aware + day-aware greeting message.
-   * Examples: "Good morning, Maya" / "Good afternoon, Tricia" / "Good evening, Maya"
-   */
-  function buildGreetingHello(name) {
-    const hour = new Date().getHours();
-    if (hour < 12)  return "Good morning, " + name;
-    if (hour < 17)  return "Good afternoon, " + name;
-    return "Good evening, " + name;
-  }
-
-  /**
-   * Day-of-week + task-count-aware sub-message.
-   * Returns a short contextual line under the greeting.
-   */
-  function buildGreetingMessage(taskCount) {
-    const now = new Date();
-    const day = now.getDay(); // 0=Sun, 1=Mon, ... 5=Fri, 6=Sat
-    const hour = now.getHours();
-
-    // Weekend
-    if (day === 0 || day === 6) {
-      return "Quick look at what's on deck for next week.";
-    }
-    // Monday morning
-    if (day === 1 && hour < 12) {
-      return "New week, fresh start. Here's what needs your attention first.";
-    }
-    // Friday
-    if (day === 5) {
-      if (hour < 12)  return "Last day of the week — let's finish strong.";
-      return "Almost there. Close off what you can — Monday-you will thank you.";
-    }
-    // High task count
-    if (taskCount > 8) {
-      return "Big board today. Pick one thing, finish it, build momentum from there.";
-    }
-    // Default
-    return "Here's where things stand — let's keep the momentum going.";
-  }
-
-  /**
-   * Compute the three stat chip counts: approval, stuck, total.
-   */
-  function computeStatCounts(tasks) {
-    let approval = 0, stuck = 0;
-    tasks.forEach(function (t) {
-      const s = t.status || t.sheetStatus || "";
-      if (APPROVAL_STATUSES.indexOf(s) > -1) approval++;
-      if (STUCK_STATUSES.indexOf(s) > -1) stuck++;
-    });
-    return { approval: approval, stuck: stuck, total: tasks.length };
-  }
-
-  /**
-   * Update the greeting banner with current name, time-of-day message, and stat chips.
-   */
-  function updateGreeting(tasks) {
-    const name = getViewerName();
-    const hi  = document.getElementById("greeting-hi");
-    const msg = document.getElementById("greeting-msg");
-    if (hi)  hi.textContent  = buildGreetingHello(name);
-    if (msg) msg.textContent = buildGreetingMessage(tasks.length);
-
-    // Stat chips
-    const counts = computeStatCounts(tasks);
-    const chipApproval = document.getElementById("chip-approval");
-    const chipStuck    = document.getElementById("chip-stuck");
-    const chipTotal    = document.getElementById("chip-total");
-
-    if (chipApproval) {
-      if (counts.approval > 0) {
-        chipApproval.textContent = counts.approval + (counts.approval === 1 ? " needs approval" : " need approval");
-        chipApproval.style.display = "";
-      } else {
-        chipApproval.style.display = "none";
-      }
-    }
-    if (chipStuck) {
-      if (counts.stuck > 0) {
-        chipStuck.textContent = counts.stuck + (counts.stuck === 1 ? " stuck" : " stuck");
-        chipStuck.style.display = "";
-      } else {
-        chipStuck.style.display = "none";
-      }
-    }
-    if (chipTotal) {
-      chipTotal.textContent = counts.total + (counts.total === 1 ? " total task" : " total tasks");
-    }
-  }
-
-  // ============================== FILTER BAR (Phase 04) ==============================
-  /**
-   * Apply the current filter to all task cards in the DOM.
-   * Hides tasks whose data-status doesn't match. Hides empty category sections.
-   * Called after every render and on every filter button click.
-   */
-  function applyFilter(filter) {
-    if (filter) currentFilter = filter;
-    try { localStorage.setItem(STORAGE_KEY_FILTER, currentFilter); } catch (e) {}
-
-    // Update active state on filter buttons
-    document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
-      if (btn.getAttribute("data-filter") === currentFilter) btn.classList.add("active");
-      else btn.classList.remove("active");
-    });
-
-    // Show/hide task items
-    document.querySelectorAll(".task-item").forEach(function (item) {
-      if (currentFilter === "all") {
-        item.classList.remove("filter-hidden");
-        return;
-      }
-      const status = item.getAttribute("data-status") || "";
-      if (status === currentFilter) item.classList.remove("filter-hidden");
-      else item.classList.add("filter-hidden");
-    });
-
-    // Hide category sections with no visible task items
-    document.querySelectorAll(".category-section").forEach(function (section) {
-      const visibleTasks = section.querySelectorAll(".task-item:not(.filter-hidden)").length;
-      if (currentFilter === "all" || visibleTasks > 0) {
-        section.classList.remove("filter-empty");
-      } else {
-        section.classList.add("filter-empty");
-      }
-    });
-  }
-
-  function wireFilterBar() {
-    document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
-      if (btn.dataset.wired === "1") return;
-      btn.dataset.wired = "1";
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        applyFilter(btn.getAttribute("data-filter"));
-      });
-    });
-  }
-
-  // ============================== ADD TASK QUICK CARD (Phase 03) ==============================
-  function wireAddTaskQuickCard() {
-    const btn = document.getElementById("quick-add-task");
-    if (!btn || btn.dataset.wired === "1") return;
-    btn.dataset.wired = "1";
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      if (window.tpsComms && typeof window.tpsComms.openWizard === "function") {
-        window.tpsComms.openWizard();
-      } else {
-        console.warn("[live-tasks] window.tpsComms.openWizard not available — Add Task can't open");
-      }
-    });
-  }
-
   // ============================== RE-WIRE WIDGET ==============================
   function reWireWidget() {
     // Re-trigger status-widget-client.js's button wiring on freshly rendered DOM.
@@ -505,9 +316,7 @@
         renderTasks(tasks);
         renderWins(wins);
         updateLastSyncedDisplay();
-        updateGreeting(tasks);   // Sprint 2 — Phase 02: greeting banner
         reWireWidget();
-        applyFilter();           // Sprint 2 — Phase 04: re-apply filter to freshly rendered DOM
         setRefreshButtonState("idle");
         console.log("[live-tasks] Refreshed: " + tasks.length + " tasks, " + wins.length + " wins.");
       })
@@ -521,17 +330,6 @@
   // ============================== INIT ==============================
   function init() {
     showCachedTimestamp(); // show last-known timestamp before first fetch finishes
-
-    // Sprint 2 — Phase 02: show greeting with cached name BEFORE first fetch finishes
-    const name = getViewerName();
-    const hi = document.getElementById("greeting-hi");
-    if (hi) hi.textContent = buildGreetingHello(name);
-
-    // Sprint 2 — Phase 03: wire Add Task quick card
-    wireAddTaskQuickCard();
-
-    // Sprint 2 — Phase 04: wire filter bar
-    wireFilterBar();
 
     // Wire the refresh button
     const refreshBtn = document.getElementById("tps-refresh-btn");
