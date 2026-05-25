@@ -984,8 +984,23 @@
         <!-- PAGE HEADER -->
         <div class="page-header">
             <h1 class="page-title">Operations Tracker</h1>
-            <p class="page-subtitle">Last updated: First run pending — will refresh at 1 PM Eastern</p>
+            <div class="page-subtitle-row" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                <span id="last-synced-timestamp" class="page-subtitle" style="margin:0;">Last updated: connecting…</span>
+                <button id="tps-refresh-btn" type="button" style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:1.5px solid #CBB067;border-radius:6px;background:transparent;color:#CBB067;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s ease;">↻ Refresh</button>
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);">
+                    <span style="width:7px;height:7px;border-radius:50%;background:#4CAF50;display:inline-block;animation:tps-pulse 2s infinite;"></span>
+                    <span style="font-weight:600;color:#4CAF50;letter-spacing:.5px;text-transform:uppercase;">Live</span>
+                </span>
+            </div>
         </div>
+        <style>
+            #tps-refresh-btn:hover { background: rgba(203,176,103,.1); }
+            #tps-refresh-btn:disabled { opacity: 0.6; cursor: wait; }
+            #tps-refresh-btn .spin-icon { display: inline-block; animation: tps-spin 1s linear infinite; }
+            #tps-refresh-btn.error-state { background: #fcebeb; border-color: #fca5a5; color: #a32d2d; }
+            @keyframes tps-spin { to { transform: rotate(360deg); } }
+            @keyframes tps-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+        </style>
 
         <!-- QUICK ACTION CARDS -->
         <div class="quick-cards">
@@ -1055,60 +1070,48 @@
                 <div class="wins-title">Quick Wins</div>
                 <div class="wins-subtitle">Closed Items</div>
             </div>
-            <div class="wins-grid">
-                <!-- QUICK_WINS_START -->
-                <div class="empty-state">No items yet — will populate from your Sheet.</div>
-                <!-- QUICK_WINS_END -->
+            <div class="wins-grid" id="tasks-quick-wins">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
 
         <!-- OPERATIONS & ADMIN SECTION -->
         <div class="category-section">
             <h2 class="category-title">Operations & Admin</h2>
-            <div class="tasks-list">
-                <!-- OPERATIONS_ADMIN_START -->
-                <div class="empty-state">Waiting for first refresh at 1 PM Eastern...</div>
-                <!-- OPERATIONS_ADMIN_END -->
+            <div class="tasks-list" id="tasks-operations-admin">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
 
         <!-- LEASING & MARKETING SECTION -->
         <div class="category-section">
             <h2 class="category-title">Leasing & Marketing</h2>
-            <div class="tasks-list">
-                <!-- LEASING_MARKETING_START -->
-                <div class="empty-state">Waiting for first refresh at 1 PM Eastern...</div>
-                <!-- LEASING_MARKETING_END -->
+            <div class="tasks-list" id="tasks-leasing-marketing">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
 
         <!-- MAINTENANCE & REPAIRS SECTION -->
         <div class="category-section">
             <h2 class="category-title">Maintenance & Repairs</h2>
-            <div class="tasks-list">
-                <!-- MAINTENANCE_REPAIRS_START -->
-                <div class="empty-state">Waiting for first refresh at 1 PM Eastern...</div>
-                <!-- MAINTENANCE_REPAIRS_END -->
+            <div class="tasks-list" id="tasks-maintenance-repairs">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
 
         <!-- FINANCIALS & ACCOUNTING SECTION -->
         <div class="category-section">
             <h2 class="category-title">Financials & Accounting</h2>
-            <div class="tasks-list">
-                <!-- FINANCIALS_ACCOUNTING_START -->
-                <div class="empty-state">Waiting for first refresh at 1 PM Eastern...</div>
-                <!-- FINANCIALS_ACCOUNTING_END -->
+            <div class="tasks-list" id="tasks-financials-accounting">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
 
         <!-- TENANT RELATIONS SECTION -->
         <div class="category-section">
             <h2 class="category-title">Tenant Relations</h2>
-            <div class="tasks-list">
-                <!-- TENANT_RELATIONS_START -->
-                <div class="empty-state">Waiting for first refresh at 1 PM Eastern...</div>
-                <!-- TENANT_RELATIONS_END -->
+            <div class="tasks-list" id="tasks-tenant-relations">
+                <div class="empty-state">Loading…</div>
             </div>
         </div>
     </div>
@@ -1173,7 +1176,10 @@
         });
     </script>
 
-    <!-- Silent comms widget -->
+    <!-- Silent comms widget (handles button clicks + Add Task wizard) -->
     <script src="status-widget-client.js"></script>
+
+    <!-- Live tasks (Sprint 1 Phase 1A — replaces Python rebuild with client-side fetch) -->
+    <script src="live-tasks.js"></script>
 </body>
 </html>

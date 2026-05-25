@@ -831,6 +831,7 @@
   window.tpsComms = {
     actor: getActor, setActor: setActor, clearActor: clearActor,
     pickActor: showActorPicker, openWizard: openAddTaskWizard,
+    wireTasks: wireTasks,  // exposed for live-tasks.js (Sprint 1 — Phase 1A)
     sendTest: function (id) { return postUpdate({ id: id || "test-" + Date.now(), status: "Test", note: "Pinged from console", by: getActor() || "Unknown" }); }
   };
 })();
