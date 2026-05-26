@@ -17,6 +17,10 @@
   const STORAGE_KEY_FILTER = "tps-current-filter";
   let currentFilter = "all";
   try { const stored = localStorage.getItem(STORAGE_KEY_FILTER); if (stored) currentFilter = stored; } catch (e) {}
+  const STORAGE_KEY_ACTOR = "tps-comms:actor";
+  const DEFAULT_VIEWER_NAME = "Maya";
+  const APPROVAL_STATUSES = ["Needs Approval", "Approval"];
+  const STUCK_STATUSES = ["Stuck"];
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
@@ -273,6 +277,48 @@
   // ============================== RE-WIRE WIDGET ==============================
   
 
+  
+  // ===== GREETING BANNER (Phase 02) =====
+  function getViewerName() {
+    try { const stored = localStorage.getItem(STORAGE_KEY_ACTOR); if (stored && stored.trim()) return stored.trim(); } catch (e) {}
+    return DEFAULT_VIEWER_NAME;
+  }
+  function buildGreetingHello(name) {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning, " + name;
+    if (hour < 17) return "Good afternoon, " + name;
+    return "Good evening, " + name;
+  }
+  function buildGreetingMessage(taskCount) {
+    const now = new Date();
+    const day = now.getDay();
+    const hour = now.getHours();
+    if (day === 0 || day === 6) return "Quick look at what's on deck for next week.";
+    if (day === 1 && hour < 12) return "New week, fresh start. Here's what needs your attention first.";
+    if (day === 5) { if (hour < 12) return "Last day of the week — let's finish strong."; return "Almost there. Close off what you can — Monday-you will thank you."; }
+    if (taskCount > 8) return "Big board today. Pick one thing, finish it, build momentum from there.";
+    return "Here's where things stand — let's keep the momentum going.";
+  }
+  function computeStatCounts(tasks) {
+    let approval = 0, stuck = 0;
+    tasks.forEach(function (t) { const s = t.status || t.sheetStatus || ""; if (APPROVAL_STATUSES.indexOf(s) > -1) approval++; if (STUCK_STATUSES.indexOf(s) > -1) stuck++; });
+    return { approval: approval, stuck: stuck, total: tasks.length };
+  }
+  function updateGreeting(tasks) {
+    const name = getViewerName();
+    const hi = document.getElementById("greeting-hi");
+    const msg = document.getElementById("greeting-msg");
+    if (hi) hi.textContent = buildGreetingHello(name);
+    if (msg) msg.textContent = buildGreetingMessage(tasks.length);
+    const counts = computeStatCounts(tasks);
+    const chipApproval = document.getElementById("chip-approval");
+    const chipStuck = document.getElementById("chip-stuck");
+    const chipTotal = document.getElementById("chip-total");
+    if (chipApproval) { if (counts.approval > 0) { chipApproval.textContent = counts.approval + (counts.approval === 1 ? " needs approval" : " need approval"); chipApproval.style.display = ""; } else { chipApproval.style.display = "none"; } }
+    if (chipStuck) { if (counts.stuck > 0) { chipStuck.textContent = counts.stuck + " stuck"; chipStuck.style.display = ""; } else { chipStuck.style.display = "none"; } }
+    if (chipTotal) { chipTotal.textContent = counts.total + (counts.total === 1 ? " total task" : " total tasks"); }
+  }
+
   // ===== FILTER BAR (Phase 04) =====
   function applyFilter(filter) {
     if (filter) currentFilter = filter;
@@ -350,6 +396,7 @@
         renderTasks(tasks);
         renderWins(wins);
         updateLastSyncedDisplay();
+        updateGreeting(tasks);
         reWireWidget();
         applyFilter();
         setRefreshButtonState("idle");
