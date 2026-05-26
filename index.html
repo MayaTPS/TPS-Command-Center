@@ -1086,10 +1086,19 @@
             body.dark-mode .tps-filter-btn.active { background: var(--tps-yellow); color: #fff; }
             .category-section.filter-empty { display: none; }
             .tps-filter-empty-msg { padding: 24px 18px; margin: 8px 0 16px; text-align: center; color: var(--text-secondary); font-size: 14px; background: var(--bg-secondary); border: 1px dashed var(--border); border-radius: 12px; }
-            .task-archive-row { text-align: right; padding-top: 8px; margin-top: 8px; border-top: 1px dashed var(--border); }
-            .btn-archive { padding: 4px 10px; font-size: 11px; color: var(--text-secondary); background: transparent; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; }
-            .btn-archive:hover { color: #b83a33; border-color: #fca5a5; background: rgba(244, 67, 54, 0.06); }
+            /* Phase 06 button styles — locked 2026-05-26 */
+            .task-archive-row { display: none; }  /* deprecated — Archive now inline */
+            .btn-archive { color: #7a5200; background: #fdf5e0; border-color: #d4a843; }
+            .btn-archive:hover { background: #f9eac6; border-color: #b8902c; }
             .btn-archive:disabled { opacity: 0.6; cursor: wait; }
+            body.dark-mode .btn-archive { color: #f0d070; background: #3a2800; border-color: #c4a030; }
+            body.dark-mode .btn-archive:hover { background: #4a3500; border-color: #d4b040; }
+            .btn-done { border-color: #86efac; color: var(--status-green); }
+            .btn-done:hover { background: rgba(76, 175, 80, 0.08); border-color: var(--status-green); }
+            .btn-gotit { border-color: #d1d5db; color: #5f5e5a; background: #f1efe8; }
+            .btn-gotit:hover { background: #e6e3d8; }
+            .btn-remind-expanded { border-color: var(--tps-gold-light); color: var(--tps-gold); }
+            .btn-remind-expanded:hover { background: rgba(207, 168, 87, 0.08); border-color: var(--tps-gold); }
             .task-item.filter-hidden { display: none; }
             @media (max-width: 640px) { .tps-filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .tps-filter-btn { flex-shrink: 0; } }
         </style>
