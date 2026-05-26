@@ -56,7 +56,8 @@
             z-index: 100;
             background: #ffffff;
             border-bottom: 2px solid #CBB067;
-            padding: 12px 30px;
+            /* Bar stays full-width; content aligns with the 1200px body container */
+            padding: 12px max(30px, calc((100% - 1200px) / 2 + 30px));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -405,7 +406,9 @@
             border-radius: 12px;
             padding: 32px;
             border: 2px solid var(--tps-gold);
-            margin-bottom: 40px;
+            /* Align this card with the 1200px body container — keeps it sitting like a normal section instead of stretching full viewport */
+            max-width: 1200px;
+            margin: 0 auto 40px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         .wins-header {
