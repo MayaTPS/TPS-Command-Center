@@ -1086,6 +1086,10 @@
             body.dark-mode .tps-filter-btn.active { background: var(--tps-yellow); color: #fff; }
             .category-section.filter-empty { display: none; }
             .tps-filter-empty-msg { padding: 24px 18px; margin: 8px 0 16px; text-align: center; color: var(--text-secondary); font-size: 14px; background: var(--bg-secondary); border: 1px dashed var(--border); border-radius: 12px; }
+            .task-archive-row { text-align: right; padding-top: 8px; margin-top: 8px; border-top: 1px dashed var(--border); }
+            .btn-archive { padding: 4px 10px; font-size: 11px; color: var(--text-secondary); background: transparent; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; }
+            .btn-archive:hover { color: #b83a33; border-color: #fca5a5; background: rgba(244, 67, 54, 0.06); }
+            .btn-archive:disabled { opacity: 0.6; cursor: wait; }
             .task-item.filter-hidden { display: none; }
             @media (max-width: 640px) { .tps-filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .tps-filter-btn { flex-shrink: 0; } }
         </style>
