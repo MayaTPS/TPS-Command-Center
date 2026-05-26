@@ -266,22 +266,51 @@ function escapeHtml(s) {
   }
 
   function updateLastSyncedDisplay() {
-    const el = document.getElementById("last-synced-timestamp");
-    if (el) {
-      const ts = nowFormatted();
-      el.textContent = "Last updated: " + ts;
-      try { localStorage.setItem(STORAGE_KEY_LAST_SYNCED, ts); } catch (e) {}
+      const el = document.getElementById("last-synced-timestamp");
+      if (!el) return;
+      window.__lastSyncedAt = Date.now();
+      el.textContent = "Last updated " + formatRelativeTime(window.__lastSyncedAt);
+      try { localStorage.setItem(STORAGE_KEY_LAST_SYNCED, String(window.__lastSyncedAt)); } catch (e) {}
     }
-  }
 
   function showCachedTimestamp() {
-    const el = document.getElementById("last-synced-timestamp");
-    if (!el) return;
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY_LAST_SYNCED);
-      if (cached) el.textContent = "Last updated: " + cached;
-    } catch (e) {}
-  }
+      const el = document.getElementById("last-synced-timestamp");
+      if (!el) return;
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY_LAST_SYNCED);
+        if (cached) {
+          const cachedNum = Number(cached);
+          if (!isNaN(cachedNum) && cachedNum > 1000000000000) {
+            window.__lastSyncedAt = cachedNum;
+            el.textContent = "Last updated " + formatRelativeTime(cachedNum);
+          } else {
+            el.textContent = "Last updated: " + cached;
+          }
+        }
+      } catch (e) {}
+    }
+  
+    // Relative time formatter ("2 min ago", "just now", etc.)
+    function formatRelativeTime(ts) {
+      if (!ts) return "just now";
+      const diffSec = Math.floor((Date.now() - ts) / 1000);
+      if (diffSec < 10) return "just now";
+      if (diffSec < 60) return diffSec + " sec ago";
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return diffMin + (diffMin === 1 ? " min ago" : " min ago");
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return diffHr + (diffHr === 1 ? " hr ago" : " hrs ago");
+      const diffDay = Math.floor(diffHr / 24);
+      return diffDay + (diffDay === 1 ? " day ago" : " days ago");
+    }
+  
+    // Keep the timestamp fresh every 30 seconds without re-fetching
+    if (!window.__tpsRelTimer) {
+      window.__tpsRelTimer = setInterval(function () {
+        const el = document.getElementById("last-synced-timestamp");
+        if (el && window.__lastSyncedAt) el.textContent = "Last updated " + formatRelativeTime(window.__lastSyncedAt);
+      }, 30000);
+    }
 
   // ============================== RE-WIRE WIDGET ==============================
   
@@ -460,6 +489,13 @@ function escapeHtml(s) {
       if (currentFilter === "all" || visibleTasks > 0) section.classList.remove("filter-empty");
       else section.classList.add("filter-empty");
     });
+  
+    // Win #3: show friendly empty state when filter has zero matches
+    const emptyMsg = document.getElementById("tps-filter-empty-msg");
+    if (emptyMsg) {
+      const totalVisible = document.querySelectorAll(".task-item:not(.filter-hidden)").length;
+      emptyMsg.style.display = (currentFilter !== "all" && totalVisible === 0) ? "" : "none";
+    }
   }
 
   function wireFilterBar() {
