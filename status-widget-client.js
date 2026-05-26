@@ -813,7 +813,10 @@
         const ta = task.querySelector(".task-comment-input");
         const n = ta ? ta.value.trim() : "";
         if (!n) { toast("Note is empty", false); return; }
-        send(task, "Note added", n).then(function () { if (ta) ta.value = ""; });
+        // Preserve the current task status — the gold "Note added" badge already signals a note was added,
+        // so we don't want Save Note to overwrite the real status (In Progress, Approval, etc.).
+        const currentStatus = (task.dataset && task.dataset.status) || "Note added";
+        send(task, currentStatus, n).then(function () { if (ta) ta.value = ""; });
       });
     });
     console.log("[TPS Widget] Wired " + tasks.length + " task items.");
