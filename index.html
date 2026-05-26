@@ -1051,6 +1051,28 @@
             </div>
         </div>
 
+
+        <!-- FILTER BAR (Sprint 2 Phase 04 — client-side filter) -->
+        <div class="tps-filter-bar" id="tps-filter-bar" role="tablist" aria-label="Task status filter">
+            <button class="tps-filter-btn active" data-filter="all" role="tab">All</button>
+            <button class="tps-filter-btn" data-filter="New" role="tab">New</button>
+            <button class="tps-filter-btn" data-filter="Needs Approval" role="tab">Approval</button>
+            <button class="tps-filter-btn" data-filter="In Progress" role="tab">In Progress</button>
+            <button class="tps-filter-btn" data-filter="Maya Needs Help" role="tab">Maya Needs Help</button>
+            <button class="tps-filter-btn" data-filter="Stuck" role="tab">Stuck</button>
+            <button class="tps-filter-btn" data-filter="FYI Only" role="tab">FYI</button>
+        </div>
+        <style>
+            .tps-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 0 20px; margin-bottom: 8px; }
+            .tps-filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s ease; }
+            .tps-filter-btn:hover { border-color: var(--tps-yellow); color: var(--tps-yellow); }
+            .tps-filter-btn.active { background: var(--tps-yellow); color: #fff; border-color: var(--tps-yellow); font-weight: 600; }
+            body.dark-mode .tps-filter-btn { background: rgba(255,255,255,0.04); }
+            body.dark-mode .tps-filter-btn.active { background: var(--tps-yellow); color: #fff; }
+            .category-section.filter-empty { display: none; }
+            .task-item.filter-hidden { display: none; }
+            @media (max-width: 640px) { .tps-filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .tps-filter-btn { flex-shrink: 0; } }
+        </style>
         <!-- OPERATIONS & ADMIN SECTION -->
         <div class="category-section">
             <h2 class="category-title">Operations & Admin</h2>
