@@ -779,7 +779,16 @@
       bind(".btn-craig",   "Craig on it",  "What are you working on for this task?",       "e.g. Checking the site tomorrow morning");
       bind(".btn-approve", "Approved",     "What are you approving? (vendor, cost, plan…)", "e.g. Approved Mike's quote of $480 for the faucet");
       bind(".btn-hold",    "On Hold",      "Why on hold? Anything blocking it?",            "e.g. Waiting on tenant to confirm availability");
-      bind(".btn-reject",  "Rejected",     "Why rejected?",                                  "e.g. Quote too high — need 2 more bids");
+      // Phase 06 Round 3 — Reject is now 2-step: confirm → existing note prompt
+        const rejectBtnElem = task.querySelector(".btn-reject");
+        if (rejectBtnElem) {
+          rejectBtnElem.addEventListener("click", function (rejE) {
+            rejE.preventDefault();
+            rejE.stopPropagation();
+            if (!confirm("Reject this task?\n\nMaya will be notified, and this task will be removed from your dashboard.")) return;
+            triggerAction("Rejected", "Why rejected?", "e.g. Quote too high — need 2 more bids");
+          });
+        }
 
       // Phase 06 — Done button (was task-checkbox, converted 2026-05-26)
       const doneBtn = task.querySelector(".btn-done");
