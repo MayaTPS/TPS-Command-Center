@@ -164,7 +164,7 @@ function escapeHtml(s) {
     }
 
     return (
-      '<div class="task-item" data-id="' + id + '" data-status="' + escapeHtml(task.sheetStatus || "") + '">' +
+      '<div class="task-item" data-id="' + id + '" data-status="' + escapeHtml(task.sheetStatus || "") + '" data-overlay-note="' + escapeHtml(task.overlayNote || "") + '">' +
         '<div class="task-row">' +
           '<div class="task-info">' +
             '<button class="task-expand-btn">▼</button>' +
@@ -173,7 +173,7 @@ function escapeHtml(s) {
           '</div>' +
           '<div class="task-status">' +
             '<div class="task-status-badge ' + statusClass + '">' + escapeHtml(normalizeStatusLabel(task.status)) + '</div>' +
-            ((task.overlayNote && String(task.overlayNote).trim()) ? '<span class="task-note-added-badge">Note added</span>' : '') +
+            (function () { const overlay = String(task.overlayNote || "").trim(); if (!overlay) return ""; let seen = ""; try { const m = JSON.parse(localStorage.getItem("tps_seen_notes") || "{}"); seen = String(m[id] || ""); } catch (e) {} return (overlay !== seen) ? '<span class="task-note-added-badge">Note added</span>' : ""; })() +
           '</div>' +
         '</div>' +
         '<div class="task-expanded">' +
@@ -811,6 +811,22 @@ function escapeHtml(s) {
         if (!item.__historyObs) {
           const autoOpenIfNeeded = function () {
             if (!item.classList.contains("expanded")) return;
+            // Mark the current overlay note as seen and hide the "Note added" badge in place.
+            // The next render will check localStorage and skip rendering the badge for this overlay text.
+            try {
+              const taskId = item.getAttribute("data-id");
+              const overlay = item.dataset.overlayNote || "";
+              if (taskId) {
+                let seenMap = {};
+                try { seenMap = JSON.parse(localStorage.getItem("tps_seen_notes") || "{}"); } catch (e) {}
+                if (seenMap[taskId] !== overlay) {
+                  seenMap[taskId] = overlay;
+                  localStorage.setItem("tps_seen_notes", JSON.stringify(seenMap));
+                  const badge = item.querySelector(".task-note-added-badge");
+                  if (badge) badge.style.display = "none";
+                }
+              }
+            } catch (e) {}
             const listEl = item.querySelector(".tps-history-list");
             const toggleBtn = item.querySelector(".tps-history-toggle");
             if (!listEl || !toggleBtn) return;
