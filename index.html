@@ -1172,7 +1172,7 @@
                     if (!item) return;
                     // Click on expand button → toggle
                     if (e.target.classList.contains('task-expand-btn') || e.target.closest('.task-expand-btn')) {
-                        toggleExpand(item);
+                        item.classList.toggle('expanded');
                         return;
                     }
                     // Don\'t collapse if clicking on action buttons, textareas, inputs, or labels
@@ -1188,7 +1188,7 @@
                         return;
                     }
                     // Click anywhere else on the card → toggle
-                    toggleExpand(item);
+                    item.classList.toggle('expanded');
                 });
         
                             // Prevent event bubbling from textareas
