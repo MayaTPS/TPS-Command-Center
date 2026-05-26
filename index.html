@@ -1099,6 +1099,9 @@
             .btn-gotit:hover { background: #e6e3d8; }
             .btn-remind-expanded { border-color: var(--tps-gold-light); color: var(--tps-gold); }
             .btn-remind-expanded:hover { background: rgba(207, 168, 87, 0.08); border-color: var(--tps-gold); }
+            /* Phase 06 collapsed-card cleanup — hide redundant collapsed-row buttons */
+            .task-item .tps-remind-btn { display: none !important; }  /* redundant with .btn-remind-expanded */
+            .task-item:not(.expanded) .tps-history-toggle { display: none; }  /* View notes shown only when expanded */
             .task-item.filter-hidden { display: none; }
             @media (max-width: 640px) { .tps-filter-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .tps-filter-btn { flex-shrink: 0; } }
         </style>
