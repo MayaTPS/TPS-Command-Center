@@ -194,6 +194,7 @@ function escapeHtml(s) {
               '</textarea>' +
               '<button class="comment-save-btn">Save Note</button>' +
             '</div>' +
+            '<div class="task-archive-row"><button class="btn-archive" data-task-id="' + id + '" title="Move this task to the Archive tab">📦 Archive</button></div>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -498,7 +499,48 @@ function escapeHtml(s) {
     }
   }
 
-  function wireFilterBar() {
+  function wireArchiveButtons() {
+      document.querySelectorAll(".btn-archive").forEach(function (btn) {
+        if (btn.dataset.wired === "1") return;
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskId = btn.getAttribute("data-task-id");
+          if (!taskId) return;
+          const taskItem = btn.closest(".task-item");
+          const titleEl = taskItem ? taskItem.querySelector(".task-title") : null;
+          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
+          if (!confirm('Archive this task?\n\n"' + taskTitle + '"\n\nIt will move to the 📦 Archive tab and clear from the active board.')) return;
+          const originalLabel = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "Archiving…";
+          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
+          fetch(WEB_APP_URL + "?action=archive", {
+            method: "POST",
+            body: JSON.stringify({ id: taskId, by: actor, token: SECRET_TOKEN })
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              if (res && res.ok) {
+                if (taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
+                setTimeout(function () { refreshTasks(); }, 300);
+              } else {
+                alert("Could not archive: " + ((res && (res.reason || res.error)) || "unknown error"));
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+              }
+            })
+            .catch(function (err) {
+              alert("Network error archiving: " + err.message);
+              btn.disabled = false;
+              btn.textContent = originalLabel;
+            });
+        });
+      });
+    }
+  
+    function wireFilterBar() {
     document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
       if (btn.dataset.wired === "1") return;
       btn.dataset.wired = "1";
@@ -581,6 +623,7 @@ function escapeHtml(s) {
     }
 
     wireFilterBar();
+    wireArchiveButtons();
 
     // Initial fetch
     refresh();
