@@ -1097,8 +1097,42 @@
             .btn-done:hover { background: rgba(76, 175, 80, 0.08); border-color: var(--status-green); }
             .btn-gotit { border-color: #d1d5db; color: #5f5e5a; background: #f1efe8; }
             .btn-gotit:hover { background: #e6e3d8; }
-            .btn-remind-expanded { border-color: var(--tps-gold-light); color: var(--tps-gold); }
-            .btn-remind-expanded:hover { background: rgba(207, 168, 87, 0.08); border-color: var(--tps-gold); }
+            .btn-remind-expanded { border-color: #d4a843; color: #8a6a1a; background: #fffaf0; }
+            .btn-remind-expanded:hover { background: #fdf5e0; border-color: #b8902c; }
+            body.dark-mode .btn-remind-expanded { border-color: var(--tps-gold-light); color: var(--tps-gold-light); background: transparent; }
+            body.dark-mode .btn-remind-expanded:hover { background: rgba(245, 230, 211, 0.1); }
+            /* Phase 07 — branded modal infrastructure (2-step dialogs) */
+            .tps-modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: tpsModalIn 0.15s ease-out; }
+            @keyframes tpsModalIn { from { background: rgba(0,0,0,0); } to { background: rgba(0,0,0,0.5); } }
+            .tps-modal { background: #FFFFFF; border: 1.5px solid #E8D5C4; border-radius: 14px; padding: 28px; max-width: 480px; width: 92%; font-family: inherit; box-shadow: 0 12px 48px rgba(0,0,0,0.18); }
+            body.dark-mode .tps-modal { background: #1a1a1a; border-color: #3a2800; color: #f5f5f5; }
+            .tps-modal-icon { font-size: 32px; text-align: center; margin-bottom: 10px; }
+            .tps-modal-title { font-size: 19px; font-weight: 600; text-align: center; margin-bottom: 14px; color: #1f2937; }
+            body.dark-mode .tps-modal-title { color: #f5f5f5; }
+            .tps-modal-chip { background: #FAF8F5; border: 1px solid #E8D5C4; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #666; }
+            body.dark-mode .tps-modal-chip { background: #2a2a2a; border-color: #3a3a3a; color: #b0b0b0; }
+            .tps-modal-body { font-size: 14px; line-height: 1.55; color: #4a4a4a; margin-bottom: 18px; }
+            body.dark-mode .tps-modal-body { color: #c0c0c0; }
+            .tps-modal-textarea { width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid #E8D5C4; border-radius: 8px; font-family: inherit; font-size: 13px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; }
+            body.dark-mode .tps-modal-textarea { background: #0f0f0f; border-color: #3a3a3a; color: #f5f5f5; }
+            .tps-modal-date { width: 100%; padding: 10px 12px; border: 1px solid #E8D5C4; border-radius: 8px; font-family: inherit; font-size: 14px; margin-bottom: 16px; box-sizing: border-box; }
+            body.dark-mode .tps-modal-date { background: #0f0f0f; border-color: #3a3a3a; color: #f5f5f5; }
+            .tps-modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+            .tps-modal-btns button { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: 1px solid; transition: background 0.12s; }
+            .tps-mbtn-cancel, .tps-mbtn-back { background: #fff; border-color: #d1d5db; color: #4a4a4a; }
+            .tps-mbtn-cancel:hover, .tps-mbtn-back:hover { background: #f5f5f5; }
+            body.dark-mode .tps-mbtn-cancel, body.dark-mode .tps-mbtn-back { background: #2a2a2a; border-color: #3a3a3a; color: #f5f5f5; }
+            body.dark-mode .tps-mbtn-cancel:hover, body.dark-mode .tps-mbtn-back:hover { background: #3a3a3a; }
+            .tps-mbtn-confirm-danger { background: #f44336; border-color: #f44336; color: #fff; }
+            .tps-mbtn-confirm-danger:hover { background: #d32f2f; }
+            .tps-mbtn-confirm-gold { background: var(--tps-gold); border-color: var(--tps-gold); color: #fff; }
+            .tps-mbtn-confirm-gold:hover { background: var(--tps-gold-dark); border-color: var(--tps-gold-dark); }
+            .tps-mbtn-confirm-amber { background: #d4a843; border-color: #d4a843; color: #fff; }
+            .tps-mbtn-confirm-amber:hover { background: #b8902c; border-color: #b8902c; }
+            .tps-mbtn-confirm-neutral { background: #f1efe8; border-color: #d1d5db; color: #5f5e5a; }
+            .tps-mbtn-confirm-neutral:hover { background: #e6e3d8; }
+            body.dark-mode .tps-mbtn-confirm-neutral { background: #2a2a2a; border-color: #3a3a3a; color: #f5f5f5; }
+            .tps-modal-btns button:disabled { opacity: 0.5; cursor: not-allowed; }
             /* Phase 06 collapsed-card cleanup — hide redundant collapsed-row buttons */
             .task-item .tps-remind-btn { display: none !important; }  /* redundant with .btn-remind-expanded */
             .task-item:not(.expanded) .tps-history-toggle { display: none; }  /* View notes shown only when expanded */
