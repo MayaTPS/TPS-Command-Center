@@ -719,7 +719,11 @@ function escapeHtml(s) {
     // Requires the small patch to status-widget-client.js that exposes wireTasks
     // on window.tpsComms (Sprint 1 modification).
     if (window.tpsComms && typeof window.tpsComms.wireTasks === "function") {
-      try { window.tpsComms.wireTasks(); }
+      try { window.tpsComms.wireTasks();
+      wireArchiveButtons();
+      wireGotitButtons();
+      wireRemindExpandedButtons();
+      wireRejectModal(); }
       catch (err) { console.error("[live-tasks] reWireWidget error:", err); }
     } else {
       console.warn("[live-tasks] window.tpsComms.wireTasks is not available — buttons may not respond. Check that the modified status-widget-client.js is loaded.");
