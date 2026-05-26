@@ -136,39 +136,32 @@ function escapeHtml(s) {
         escapeHtml(task.overlayBy || "someone") + ": " + escapeHtml(task.overlayNote) + "</div>"
       : "";
 
-    // Status-specific buttons (mirrors Python's logic)
+    // Phase 06 button rules per status (locked 2026-05-26 with Maya revisions)
     let buttonsHtml = "";
     const rawStatus = task.sheetStatus;
-
+    const archiveBtn = '<button class="btn-outlined btn-archive" data-task-id="' + id + '" title="Move to Archive">📦 Archive</button>';
+    const remindBtn  = '<button class="btn-outlined btn-remind-expanded" data-soon="1" title="Set a reminder (coming soon)">⏰ Remind me</button>';
+    const doneBtn    = '<button class="btn-outlined btn-done">✓ Done</button>';
+    const triciaBtn  = '<button class="btn-outlined btn-tricia">Tricia on it</button>';
+    const mayaBtn    = '<button class="btn-outlined btn-maya">Maya on it</button>';
+    const ACTIVE_WORK = ["In Progress", "Tricia on it", "Maya on it", "Craig on it", "Approved", "On Hold"];
     if (rawStatus === "Needs Approval") {
       buttonsHtml =
         '<button class="btn-outlined btn-approve">Approve</button>' +
-        '<button class="btn-outlined btn-reject">Reject</button>';
-    } else if (
-      rawStatus === "New" || rawStatus === "In Progress" ||
-      rawStatus === "FYI Only" || rawStatus === "Maya Needs Help" ||
-      rawStatus === "Stuck"
-    ) {
-      if (rawStatus === "New" || rawStatus === "Stuck" || rawStatus === "Maya Needs Help") {
-        buttonsHtml =
-          '<button class="btn-outlined btn-tricia">Tricia on it</button>' +
-          '<button class="btn-outlined btn-maya">Maya on it</button>';
-      }
-      // Done checkbox — always included for these statuses
-      buttonsHtml +=
-        '<div class="checkbox-container">' +
-          '<input type="checkbox" id="cb-' + id + '" class="task-checkbox">' +
-          '<label for="cb-' + id + '" class="checkbox-label">' +
-            '<div class="checkbox-box">' +
-              '<div class="checkbox-fill"></div>' +
-              '<div class="checkmark">' +
-                '<svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
-              '</div>' +
-              '<div class="success-ripple"></div>' +
-            '</div>' +
-            '<span class="checkbox-text">Done</span>' +
-          '</label>' +
-        '</div>';
+        '<button class="btn-outlined btn-reject">Reject</button>' +
+        triciaBtn + archiveBtn;
+    } else if (rawStatus === "New") {
+      buttonsHtml = triciaBtn + mayaBtn + remindBtn + archiveBtn;
+    } else if (ACTIVE_WORK.indexOf(rawStatus) !== -1) {
+      buttonsHtml = doneBtn + remindBtn + archiveBtn;
+    } else if (rawStatus === "Maya Needs Help") {
+      buttonsHtml = triciaBtn + doneBtn + remindBtn + archiveBtn;
+    } else if (rawStatus === "Stuck" || rawStatus === "Stuck on it") {
+      buttonsHtml = triciaBtn + doneBtn + remindBtn + archiveBtn;
+    } else if (rawStatus === "FYI Only" || rawStatus === "FYI") {
+      buttonsHtml = '<button class="btn-outlined btn-gotit" data-soon="1" title="Acknowledge this FYI (coming soon)">👁 Got it</button>';
+    } else {
+      buttonsHtml = archiveBtn;  // unknown status fallback
     }
 
     return (
@@ -194,7 +187,6 @@ function escapeHtml(s) {
               '</textarea>' +
               '<button class="comment-save-btn">Save Note</button>' +
             '</div>' +
-            '<div class="task-archive-row"><button class="btn-archive" data-task-id="' + id + '" title="Move this task to the Archive tab">📦 Archive</button></div>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -539,6 +531,19 @@ function escapeHtml(s) {
         });
       });
     }
+
+  // Global "coming soon" handler for Phase 06 Round 1 placeholder buttons (Got it, Remind me)
+  if (!window.__tpsComingSoonWired) {
+    window.__tpsComingSoonWired = true;
+    document.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-soon='1']");
+      if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert("Coming soon — wiring up in the next round of button updates.");
+      }
+    }, true);
+  }
   
     function wireFilterBar() {
     document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
