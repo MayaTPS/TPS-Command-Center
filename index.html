@@ -945,6 +945,56 @@
                 align-items: flex-start;
             }
         }
+            /* === Phase 10 — Mobile responsive (≤ 768px) ============================ */
+            @media (max-width: 768px) {
+                /* Navbar: keep bar full-width, tighten padding, shrink logo + title for narrow screens */
+                .navbar { padding: 10px 16px; }
+                .navbar-left { gap: 10px; }
+                .navbar-logo-img { width: 36px; height: 36px; }
+                .navbar-logo { font-size: 14px; }
+                .navbar-brand div:not(.navbar-logo) { font-size: 9px; letter-spacing: 0.5px; }
+                /* Quick action cards: auto-fit already adapts; just tighten padding + gap */
+                .quick-cards { gap: 10px; margin-bottom: 24px; }
+                .quick-card { padding: 14px 10px; }
+                /* Filter tabs: handled by 640px rule, keep them horizontally scrollable here too */
+                /* Greeting banner: tighter padding */
+                .tps-greeting-banner { padding: 14px 16px; margin-bottom: 20px; }
+                /* Section titles */
+                .section-title { font-size: 18px; }
+                /* Task cards: tighter padding */
+                .task-item { padding: 14px; }
+                .task-title { font-size: 14px; }
+                .task-property { font-size: 12px; }
+                /* Task expanded content */
+                .task-planning-note, .task-overlay-note { padding: 8px 12px; margin-bottom: 10px; }
+                .task-buttons { gap: 6px; }
+                .task-buttons .btn-outlined { font-size: 12px; padding: 6px 10px; }
+                .task-quick-note-section { margin-top: 8px; }
+                .task-comment-input { font-size: 14px; min-height: 56px; padding: 8px 10px; }
+                .comment-save-btn { font-size: 13px; padding: 8px 12px; }
+                /* Chat bubbles: more readable on narrow screens */
+                .tps-bubble { max-width: 92% !important; font-size: 13px; padding: 8px 10px; }
+                .tps-history-list { padding: 10px; }
+                /* All Done card: tighter padding so it doesn't blow out the viewport */
+                .wins-box { padding: 20px; margin-bottom: 24px; }
+                .wins-title { font-size: 18px; }
+                .wins-subtitle { font-size: 10px; }
+                .win-item { padding: 10px; font-size: 12px; }
+                /* TPS branded modals: full width, scrollable */
+                .tps-modal { padding: 20px; max-height: 88vh; overflow-y: auto; width: 94%; }
+            }
+            /* === Phase 10 — Very small phones (≤ 480px) =========================== */
+            @media (max-width: 480px) {
+                .navbar-brand div:not(.navbar-logo) { display: none; }
+                .quick-cards { grid-template-columns: 1fr 1fr; }
+                .quick-card { padding: 12px 8px; }
+                .quick-card-title { font-size: 13px; }
+                .wins-box { padding: 16px; }
+                .task-item { padding: 12px; }
+                .task-status-badge { font-size: 10px; padding: 2px 6px; }
+                .task-note-added-badge { font-size: 9px; padding: 2px 6px; }
+            }
+        
     </style>
 </head>
 <body>
