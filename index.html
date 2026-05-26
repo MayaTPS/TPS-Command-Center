@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- iOS Add to Home Screen — install as a fullscreen app on iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TPS Ops">
+    <meta name="theme-color" content="#CBB067">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <title>TPS Operations Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -504,6 +510,7 @@
             padding: 12px 16px;
             transition: all 0.2s ease;
             cursor: pointer;
+            position: relative;
         }
         .task-item:hover {
             border-color: var(--tps-purple);
@@ -947,6 +954,11 @@
         }
             /* === Phase 10 — Mobile responsive (≤ 768px) ============================ */
             @media (max-width: 768px) {
+                /* Prevent horizontal scroll on mobile */
+                body, html { overflow-x: hidden; max-width: 100%; }
+                /* Long task titles must wrap inside the card instead of pushing the layout sideways */
+                .task-info { min-width: 0; max-width: 100%; flex: 1 1 auto; }
+                .task-title, .task-property { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
                 /* Navbar: keep bar full-width, tighten padding, shrink logo + title for narrow screens */
                 .navbar { padding: 10px 16px; }
                 .navbar-left { gap: 10px; }
@@ -1166,7 +1178,7 @@
             .task-quick-note-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--tps-purple); margin: 4px 0 6px; display: block; }
             body.dark-mode .task-quick-note-label { color: #b08ed8; }
             /* Note-added unread-style badge next to status */
-            .task-note-added-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--tps-gold); color: #4a3500; margin-left: 6px; vertical-align: middle; }
+            .task-note-added-badge { position: absolute; top: 8px; right: 10px; display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--tps-gold); color: #4a3500; vertical-align: middle; z-index: 2; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
             .task-note-added-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #c4690b; display: inline-block; }
             body.dark-mode .task-note-added-badge { background: var(--tps-gold-light); color: #2a1f00; }
             /* Phase 07 — branded modal infrastructure (2-step dialogs) */
