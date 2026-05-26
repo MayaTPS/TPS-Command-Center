@@ -173,6 +173,7 @@ function escapeHtml(s) {
           '</div>' +
           '<div class="task-status">' +
             '<div class="task-status-badge ' + statusClass + '">' + escapeHtml(normalizeStatusLabel(task.status)) + '</div>' +
+            ((task.overlayNote && String(task.overlayNote).trim()) ? '<span class="task-note-added-badge">Note added</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="task-expanded">' +
@@ -180,12 +181,13 @@ function escapeHtml(s) {
           overlayBlock +
           '<div class="task-actions">' +
             '<div class="task-buttons">' + buttonsHtml + '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:8px;">' +
-              '<textarea class="task-comment-input" placeholder="Leave a quick note (auto-saves when you click Save Note)...">' +
-                escapeHtml(task.overlayNote || "") +
-              '</textarea>' +
-              '<button class="comment-save-btn">Save Note</button>' +
-            '</div>' +
+          '</div>' +
+          '<div class="task-quick-note-section" style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">' +
+            '<label class="task-quick-note-label">💬 Leave a quick note</label>' +
+            '<textarea class="task-comment-input" placeholder="Leave a quick note (auto-saves when you click Save Note)...">' +
+              escapeHtml(task.overlayNote || "") +
+            '</textarea>' +
+            '<button class="comment-save-btn">Save Note</button>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -781,19 +783,31 @@ function escapeHtml(s) {
     }
   
     function wireMoveHistoryToggle() {
-      // Move SWC-appended chat-history elements INTO .task-expanded at the TOP
-      // so the layout reads: chat history → action buttons → write box (messaging-app style).
+      // Place SWC-appended chat-history INSIDE .task-expanded with the layout:
+      //   ...task description / overlay / action buttons → chat thread → quick-note textarea → toggle (hide) at bottom.
+      // The thread is auto-shown when the card is expanded (CSS handles visibility); the toggle moves to the bottom and just hides it.
       document.querySelectorAll(".task-item").forEach(function (item) {
         const expanded = item.querySelector(":scope > .task-expanded");
         if (!expanded) return;
-        // Move toggle button (and any sibling thread container) into expanded as first children
-        const candidates = [".tps-history-toggle", ".tps-history-thread", ".tps-history-list", ".tps-chat", ".tps-chat-thread"];
-        candidates.forEach(function (sel) {
+        const noteSection = expanded.querySelector(":scope > .task-quick-note-section");
+        // Threads/lists go BEFORE the quick-note section (between buttons and textarea)
+        const threadSelectors = [".tps-history-thread", ".tps-history-list", ".tps-chat", ".tps-chat-thread"];
+        threadSelectors.forEach(function (sel) {
           const el = item.querySelector(":scope > " + sel);
           if (el && el.parentNode === item) {
-            expanded.insertBefore(el, expanded.firstChild);
+            if (noteSection) {
+              expanded.insertBefore(el, noteSection);
+            } else {
+              expanded.appendChild(el);
+            }
+            el.classList.add("open");
           }
         });
+        // Toggle moves to the BOTTOM of expanded
+        const toggle = item.querySelector(":scope > .tps-history-toggle");
+        if (toggle && toggle.parentNode === item) {
+          expanded.appendChild(toggle);
+        }
       });
     }
   
