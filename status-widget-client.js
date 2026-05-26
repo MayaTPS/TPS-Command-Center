@@ -581,7 +581,7 @@
       container.innerHTML = '<div class="tps-history-empty">No notes yet — be the first to add one.</div>';
       return;
     }
-    items.forEach(function (it) {
+    items.slice().reverse().forEach(function (it) {
       const b = document.createElement("div");
       b.className = "tps-bubble " + actorClass(it.by);
       const status = it.status || "";
