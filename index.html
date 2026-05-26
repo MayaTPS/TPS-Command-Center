@@ -975,31 +975,53 @@
 
     <!-- MAIN CONTENT -->
     <div class="container">
-        <!-- BRAND HEADER -->
-        <div class="brand-header">
-            <div class="brand-name">TPS Property Management</div>
-            <div class="brand-tagline">"Raising the bar in industry standards"</div>
-        </div>
-
-        <!-- PAGE HEADER -->
-        <div class="page-header">
-            <h1 class="page-title">Operations Tracker</h1>
-            <div class="page-subtitle-row" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px;">
-                <span id="last-synced-timestamp" class="page-subtitle" style="margin:0;">Last updated: connecting…</span>
-                <button id="tps-refresh-btn" type="button" style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:1.5px solid #CBB067;border-radius:6px;background:transparent;color:#CBB067;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s ease;">↻ Refresh</button>
-                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);">
-                    <span style="width:7px;height:7px;border-radius:50%;background:#4CAF50;display:inline-block;animation:tps-pulse 2s infinite;"></span>
-                    <span style="font-weight:600;color:#4CAF50;letter-spacing:.5px;text-transform:uppercase;">Live</span>
-                </span>
+        <!-- GREETING BANNER (Sprint 2 Phase 02) -->
+        <div class="tps-greeting-banner">
+            <div class="greeting-banner-left">
+                <div class="greeting-hi" id="greeting-hi">Good morning</div>
+                <div class="greeting-msg" id="greeting-msg">Connecting to your tasks…</div>
+            </div>
+            <div class="greeting-banner-right">
+                <div class="greeting-chips">
+                    <span class="greeting-chip urgent" id="chip-approval" style="display:none;">0 need approval</span>
+                    <span class="greeting-chip" id="chip-stuck" style="display:none;">0 stuck</span>
+                    <span class="greeting-chip" id="chip-total">0 total</span>
+                </div>
+                <div class="greeting-status-row">
+                    <span id="last-synced-timestamp" class="greeting-timestamp">Last updated: connecting…</span>
+                    <button id="tps-refresh-btn" type="button">↻ Refresh</button>
+                    <span class="greeting-live-indicator">
+                        <span class="greeting-live-dot"></span>
+                        <span class="greeting-live-text">Live</span>
+                    </span>
+                </div>
             </div>
         </div>
         <style>
+            .tps-greeting-banner { background: linear-gradient(135deg, var(--tps-gold-light) 0%, #F5E6D3 100%); border: 1.5px solid #E8D5C4; border-radius: 12px; padding: 18px 22px; margin: 0 0 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+            body.dark-mode .tps-greeting-banner { background: linear-gradient(135deg, #2a2418 0%, #1f1a14 100%); border-color: #4a3a25; }
+            .greeting-banner-left { flex: 1; min-width: 250px; }
+            .greeting-hi { font-family: 'Playfair Display', serif; font-size: 1.4em; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+            .greeting-msg { font-size: 0.85em; color: var(--text-secondary); line-height: 1.45; }
+            .greeting-banner-right { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+            .greeting-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+            .greeting-chip { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 12px; background: #fff; border: 1px solid #E8D5C4; color: var(--text-secondary); white-space: nowrap; }
+            body.dark-mode .greeting-chip { background: rgba(255,255,255,0.05); }
+            .greeting-chip.urgent { background: #fff5f5; border-color: #fca5a5; color: #b83a33; }
+            body.dark-mode .greeting-chip.urgent { background: #3a1f1f; border-color: #7a3a30; color: #fca5a5; }
+            .greeting-status-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+            .greeting-timestamp { font-size: 11px; color: var(--text-muted); }
+            #tps-refresh-btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border: 1.5px solid #CBB067; border-radius: 6px; background: transparent; color: #CBB067; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s ease; }
             #tps-refresh-btn:hover { background: rgba(203,176,103,.1); }
             #tps-refresh-btn:disabled { opacity: 0.6; cursor: wait; }
             #tps-refresh-btn .spin-icon { display: inline-block; animation: tps-spin 1s linear infinite; }
             #tps-refresh-btn.error-state { background: #fcebeb; border-color: #fca5a5; color: #a32d2d; }
+            .greeting-live-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; }
+            .greeting-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4CAF50; display: inline-block; animation: tps-pulse 2s infinite; }
+            .greeting-live-text { font-weight: 600; color: #4CAF50; letter-spacing: .5px; text-transform: uppercase; }
             @keyframes tps-spin { to { transform: rotate(360deg); } }
             @keyframes tps-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+            @media (max-width: 640px) { .tps-greeting-banner { flex-direction: column; align-items: stretch; } .greeting-banner-right { align-items: stretch; } .greeting-chips, .greeting-status-row { justify-content: flex-start; } }
         </style>
 
         <!-- QUICK ACTION CARDS (Sprint 2 Phase 03 — Clock In, Upload, Add Task, Calendly) -->
