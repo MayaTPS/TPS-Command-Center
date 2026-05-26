@@ -133,8 +133,7 @@
     if (rawStatus === "Needs Approval") {
       buttonsHtml =
         '<button class="btn-outlined btn-approve">Approve</button>' +
-        '<button class="btn-outlined btn-hold">Hold Off</button>' +
-        '<button class="btn-outlined btn-reject">Rejected</button>';
+        '<button class="btn-outlined btn-reject">Reject</button>';
     } else if (
       rawStatus === "New" || rawStatus === "In Progress" ||
       rawStatus === "FYI Only" || rawStatus === "Maya Needs Help" ||
