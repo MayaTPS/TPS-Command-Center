@@ -781,12 +781,10 @@
       bind(".btn-hold",    "On Hold",      "Why on hold? Anything blocking it?",            "e.g. Waiting on tenant to confirm availability");
       bind(".btn-reject",  "Rejected",     "Why rejected?",                                  "e.g. Quote too high — need 2 more bids");
 
-      const doneCb = task.querySelector(".task-checkbox");
-      if (doneCb) doneCb.addEventListener("change", function (e) {
-        if (!doneCb.checked) return;
-        e.stopPropagation();
-        // Roll back the checkbox until the note is confirmed; we'll re-check on save
-        doneCb.checked = false;
+      // Phase 06 — Done button (was task-checkbox, converted 2026-05-26)
+      const doneBtn = task.querySelector(".btn-done");
+      if (doneBtn) doneBtn.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
         ensureActor().then(function () {
           promptForNote({
             title: "Leave a note for Maya",
@@ -794,7 +792,6 @@
             placeholder: "e.g. Tenant confirmed leak fixed, photo received"
           }).then(function (note) {
             if (note === null) return;
-            doneCb.checked = true;
             send(task, "Done", note);
           });
         });
