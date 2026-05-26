@@ -140,7 +140,7 @@ function escapeHtml(s) {
     let buttonsHtml = "";
     const rawStatus = task.sheetStatus;
     const archiveBtn = '<button class="btn-outlined btn-archive" data-task-id="' + id + '" title="Move to Archive">📦 Archive</button>';
-    const remindBtn  = '<button class="btn-outlined btn-remind-expanded" data-soon="1" title="Set a reminder (coming soon)">⏰ Remind me</button>';
+    const remindBtn  = '<button class="btn-outlined btn-remind-expanded" title="Set a reminder for this task">⏰ Remind me</button>';
     const doneBtn    = '<button class="btn-outlined btn-done">✓ Done</button>';
     const triciaBtn  = '<button class="btn-outlined btn-tricia">Tricia on it</button>';
     const mayaBtn    = '<button class="btn-outlined btn-maya">Maya on it</button>';
@@ -159,7 +159,7 @@ function escapeHtml(s) {
     } else if (rawStatus === "Stuck" || rawStatus === "Stuck on it") {
       buttonsHtml = triciaBtn + doneBtn + remindBtn + archiveBtn;
     } else if (rawStatus === "FYI Only" || rawStatus === "FYI") {
-      buttonsHtml = '<button class="btn-outlined btn-gotit" data-soon="1" title="Acknowledge this FYI (coming soon)">👁 Got it</button>';
+      buttonsHtml = '<button class="btn-outlined btn-gotit" title="Acknowledge this FYI item">👁 Got it</button>';
     } else {
       buttonsHtml = archiveBtn;  // unknown status fallback
     }
@@ -491,7 +491,98 @@ function escapeHtml(s) {
     }
   }
 
-  function wireArchiveButtons() {
+  function wireGotitButtons() {
+      document.querySelectorAll(".btn-gotit").forEach(function (btn) {
+        if (btn.dataset.wired === "1") return;
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskItem = btn.closest(".task-item");
+          const taskId = taskItem ? taskItem.getAttribute("data-id") : null;
+          if (!taskId) return;
+          const titleEl = taskItem.querySelector(".task-title");
+          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
+          const propEl = taskItem.querySelector(".task-property");
+          const property = propEl ? propEl.textContent.trim() : "";
+          const step1 = confirm('Got it?\n\n"' + taskTitle + '"\n\nThis task stays in Maya\'s queue — it\'s not cancelled. This will disappear from your dashboard.');
+          if (!step1) return;
+          const note = prompt('Leave a note for Maya (optional)\n\nBefore this disappears, leave Maya a note if needed.\n\nTip: Tenant confirmed receipt, no further action needed.', '');
+          if (note === null) return;
+          const originalLabel = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "Saving…";
+          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
+          fetch(WEB_APP_URL + "?action=gotit", {
+            method: "POST",
+            body: JSON.stringify({ id: taskId, by: actor, token: SECRET_TOKEN, property: property, task: taskTitle, note: note })
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              if (res && res.ok) {
+                if (taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
+                setTimeout(function () { refreshTasks(); }, 300);
+              } else {
+                alert("Could not acknowledge: " + ((res && (res.reason || res.error)) || "unknown error"));
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+              }
+            })
+            .catch(function (err) {
+              alert("Network error: " + err.message);
+              btn.disabled = false;
+              btn.textContent = originalLabel;
+            });
+        });
+      });
+    }
+  
+    function wireRemindExpandedButtons() {
+      document.querySelectorAll(".btn-remind-expanded").forEach(function (btn) {
+        if (btn.dataset.wired === "1") return;
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskItem = btn.closest(".task-item");
+          const taskId = taskItem ? taskItem.getAttribute("data-id") : null;
+          if (!taskId) return;
+          const titleEl = taskItem.querySelector(".task-title");
+          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
+          const propEl = taskItem.querySelector(".task-property");
+          const property = propEl ? propEl.textContent.trim() : "";
+          const tom = new Date();
+          tom.setDate(tom.getDate() + 1);
+          tom.setHours(9, 0, 0, 0);
+          const pad = function (n) { return n < 10 ? "0" + n : n; };
+          const defaultWhen = tom.getFullYear() + "-" + pad(tom.getMonth()+1) + "-" + pad(tom.getDate()) + " " + pad(tom.getHours()) + ":" + pad(tom.getMinutes());
+          const when = prompt('Set a reminder for this task:\n\n"' + taskTitle + '"\n\nPick date + time (YYYY-MM-DD HH:MM)\n(blank to cancel)', defaultWhen);
+          if (!when || !when.trim()) return;
+          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
+          const originalLabel = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "Setting…";
+          fetch(WEB_APP_URL + "?action=remindMe", {
+            method: "POST",
+            body: JSON.stringify({ id: taskId, title: (property ? property + " — " : "") + taskTitle, property: property, task: taskTitle, when: when, durationMin: 30, description: "Follow up on this task", by: actor, token: SECRET_TOKEN })
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              btn.disabled = false;
+              btn.textContent = originalLabel;
+              if (res && res.ok) { alert("Reminder set! Calendar event created."); }
+              else { alert("Could not set reminder: " + ((res && (res.error || res.reason)) || "unknown error")); }
+            })
+            .catch(function (err) {
+              btn.disabled = false;
+              btn.textContent = originalLabel;
+              alert("Network error: " + err.message);
+            });
+        });
+      });
+    }
+  
+    function wireArchiveButtons() {
       document.querySelectorAll(".btn-archive").forEach(function (btn) {
         if (btn.dataset.wired === "1") return;
         btn.dataset.wired = "1";
@@ -629,6 +720,8 @@ function escapeHtml(s) {
 
     wireFilterBar();
     wireArchiveButtons();
+    wireGotitButtons();
+    wireRemindExpandedButtons();
 
     // Initial fetch
     refresh();
