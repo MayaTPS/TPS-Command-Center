@@ -1166,32 +1166,32 @@
             document.getElementById('darkModeToggle').checked = true;
         }
 
-        // ===== ATTACH EXPAND LISTENERS TO TASK ITEMS =====
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.task-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // Check if clicking on expand button
+        // ===== ATTACH EXPAND LISTENERS TO TASK ITEMS (event delegation — works for dynamically-rendered cards) =====
+                document.addEventListener('click', function(e) {
+                    const item = e.target.closest('.task-item');
+                    if (!item) return;
+                    // Click on expand button → toggle
                     if (e.target.classList.contains('task-expand-btn') || e.target.closest('.task-expand-btn')) {
-                        toggleExpand(this);
+                        toggleExpand(item);
                         return;
                     }
-
-                    // Don't collapse if clicking on buttons, textareas, inputs, or checkboxes
+                    // Don\'t collapse if clicking on action buttons, textareas, inputs, or labels
                     if (e.target.closest('.task-buttons') ||
                         e.target.closest('.task-comment-input') ||
                         e.target.closest('.checkbox-label') ||
                         e.target.closest('.comment-save-btn') ||
+                        e.target.closest('.task-archive-row') ||
+                        e.target.closest('.btn-archive') ||
+                        e.target.closest('.history-toggle-btn') ||
                         e.target.tagName === 'TEXTAREA' ||
                         e.target.tagName === 'INPUT') {
                         return;
                     }
-
-                    // Collapse/expand on other clicks
-                    toggleExpand(this);
+                    // Click anywhere else on the card → toggle
+                    toggleExpand(item);
                 });
-            });
-
-            // Prevent event bubbling from textareas
+        
+                            // Prevent event bubbling from textareas
             document.querySelectorAll('.task-comment-input').forEach(textarea => {
                 textarea.addEventListener('click', function(e) {
                     e.stopPropagation();
