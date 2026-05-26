@@ -14,6 +14,9 @@
   const SECRET_TOKEN = "TPSMAYA4321";
   const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
   const STORAGE_KEY_LAST_SYNCED = "tps-last-synced";
+  const STORAGE_KEY_FILTER = "tps-current-filter";
+  let currentFilter = "all";
+  try { const stored = localStorage.getItem(STORAGE_KEY_FILTER); if (stored) currentFilter = stored; } catch (e) {}
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
@@ -156,7 +159,7 @@
     }
 
     return (
-      '<div class="task-item" data-id="' + id + '">' +
+      '<div class="task-item" data-id="' + id + '" data-status="' + escapeHtml(task.sheetStatus || "") + '">' +
         '<div class="task-row">' +
           '<div class="task-info">' +
             '<button class="task-expand-btn">▼</button>' +
@@ -268,6 +271,37 @@
   }
 
   // ============================== RE-WIRE WIDGET ==============================
+  
+
+  // ===== FILTER BAR (Phase 04) =====
+  function applyFilter(filter) {
+    if (filter) currentFilter = filter;
+    try { localStorage.setItem(STORAGE_KEY_FILTER, currentFilter); } catch (e) {}
+    document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
+      if (btn.getAttribute("data-filter") === currentFilter) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+    document.querySelectorAll(".task-item").forEach(function (item) {
+      if (currentFilter === "all") { item.classList.remove("filter-hidden"); return; }
+      const status = item.getAttribute("data-status") || "";
+      if (status === currentFilter) item.classList.remove("filter-hidden");
+      else item.classList.add("filter-hidden");
+    });
+    document.querySelectorAll(".category-section").forEach(function (section) {
+      const visibleTasks = section.querySelectorAll(".task-item:not(.filter-hidden)").length;
+      if (currentFilter === "all" || visibleTasks > 0) section.classList.remove("filter-empty");
+      else section.classList.add("filter-empty");
+    });
+  }
+
+  function wireFilterBar() {
+    document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", function (e) { e.preventDefault(); applyFilter(btn.getAttribute("data-filter")); });
+    });
+  }
+
   function reWireWidget() {
     // Re-trigger status-widget-client.js's button wiring on freshly rendered DOM.
     // Requires the small patch to status-widget-client.js that exposes wireTasks
@@ -317,6 +351,7 @@
         renderWins(wins);
         updateLastSyncedDisplay();
         reWireWidget();
+        applyFilter();
         setRefreshButtonState("idle");
         console.log("[live-tasks] Refreshed: " + tasks.length + " tasks, " + wins.length + " wins.");
       })
@@ -339,6 +374,8 @@
         refresh();
       });
     }
+
+    wireFilterBar();
 
     // Initial fetch
     refresh();
