@@ -128,13 +128,12 @@ function escapeHtml(s) {
     const statusClass = STATUS_CLASS_MAP[task.status] || "status-fyi";
 
     const notesBlock = task.notes
-      ? '<div class="task-description">' + escapeHtml(task.notes) + '</div>'
-      : "";
-
-    const overlayBlock = (task.overlayNote && task.overlayNote.trim())
-      ? '<div class="task-description" style="opacity:.85;font-style:italic">Latest note from ' +
-        escapeHtml(task.overlayBy || "someone") + ": " + escapeHtml(task.overlayNote) + "</div>"
-      : "";
+          ? '<div class="task-planning-note"><div class="task-planning-note-label">📋 Task description</div><div class="task-planning-note-text">' + escapeHtml(task.notes) + '</div></div>'
+          : "";
+    
+        const overlayBlock = (task.overlayNote && task.overlayNote.trim())
+          ? '<div class="task-overlay-note"><div class="task-overlay-note-label">💬 Latest update from ' + escapeHtml(task.overlayBy || "someone") + '</div><div class="task-overlay-note-text">' + escapeHtml(task.overlayNote) + '</div></div>'
+          : "";
 
     // Phase 06 button rules per status (locked 2026-05-26 with Maya revisions)
     let buttonsHtml = "";
@@ -781,6 +780,23 @@ function escapeHtml(s) {
       });
     }
   
+    function wireMoveHistoryToggle() {
+      // Move SWC-appended chat-history elements INTO .task-expanded at the TOP
+      // so the layout reads: chat history → action buttons → write box (messaging-app style).
+      document.querySelectorAll(".task-item").forEach(function (item) {
+        const expanded = item.querySelector(":scope > .task-expanded");
+        if (!expanded) return;
+        // Move toggle button (and any sibling thread container) into expanded as first children
+        const candidates = [".tps-history-toggle", ".tps-history-thread", ".tps-history-list", ".tps-chat", ".tps-chat-thread"];
+        candidates.forEach(function (sel) {
+          const el = item.querySelector(":scope > " + sel);
+          if (el && el.parentNode === item) {
+            expanded.insertBefore(el, expanded.firstChild);
+          }
+        });
+      });
+    }
+  
     function wireFilterBar() {
     document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
       if (btn.dataset.wired === "1") return;
@@ -799,7 +815,8 @@ function escapeHtml(s) {
       wireGotitButtons();
       wireRemindExpandedButtons();
       wireRejectModal();
-      wireSWCActionButtons(); }
+      wireSWCActionButtons();
+      wireMoveHistoryToggle(); }
       catch (err) { console.error("[live-tasks] reWireWidget error:", err); }
     } else {
       console.warn("[live-tasks] window.tpsComms.wireTasks is not available — buttons may not respond. Check that the modified status-widget-client.js is loaded.");
