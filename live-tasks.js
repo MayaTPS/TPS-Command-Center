@@ -706,6 +706,81 @@ function escapeHtml(s) {
     }, true);
   }
   
+    function openNoteModal(opts) {
+      return new Promise(function (resolve) {
+        const chip = (opts.property ? opts.property + " — " : "") + (opts.taskTitle || "");
+        const wrap = document.createElement("div");
+        wrap.className = "tps-modal-wrap";
+        wrap.innerHTML = '<div class="tps-modal"></div>';
+        document.body.appendChild(wrap);
+        const modal = wrap.querySelector(".tps-modal");
+        function close(result) { document.removeEventListener("keydown", onKey); wrap.remove(); resolve(result); }
+        function onKey(e) { if (e.key === "Escape") close(null); }
+        wrap.addEventListener("click", function (e) { if (e.target === wrap) close(null); });
+        document.addEventListener("keydown", onKey);
+        modal.innerHTML =
+          '<div class="tps-modal-icon">💬</div>' +
+          '<div class="tps-modal-title">Leave a note for Maya</div>' +
+          '<div class="tps-modal-chip">' + tpsEscapeHtml(chip) + '</div>' +
+          '<div class="tps-modal-body">' + tpsEscapeHtml(opts.sub || "") + '</div>' +
+          '<textarea class="tps-modal-textarea" placeholder="' + tpsEscapeHtml(opts.placeholder || "") + '" required></textarea>' +
+          '<div class="tps-modal-btns"><button type="button" class="tps-mbtn-cancel">Cancel</button><button type="button" class="tps-mbtn-confirm-gold">' + tpsEscapeHtml(opts.confirmLabel || "Save") + '</button></div>';
+        const cancelBtn = modal.querySelector(".tps-mbtn-cancel");
+        const confirmBtn = modal.querySelector(".tps-mbtn-confirm-gold");
+        const ta = modal.querySelector(".tps-modal-textarea");
+        confirmBtn.disabled = true;
+        ta.addEventListener("input", function () { confirmBtn.disabled = ta.value.trim().length === 0; });
+        setTimeout(function () { ta.focus(); }, 50);
+        cancelBtn.addEventListener("click", function () { close(null); });
+        confirmBtn.addEventListener("click", function () { const n = ta.value.trim(); if (n) close({ note: n }); });
+      });
+    }
+  
+    function handleSWCAction(btn, status, sub, placeholder, confirmLabel) {
+      const taskItem = btn.closest(".task-item");
+      if (!taskItem) return;
+      const taskId = taskItem.getAttribute("data-id");
+      if (!taskId) return;
+      const titleEl = taskItem.querySelector(".task-title");
+      const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
+      const propEl = taskItem.querySelector(".task-property");
+      const property = propEl ? propEl.textContent.trim() : "";
+      const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
+      const originalLabel = btn.textContent;
+      openNoteModal({ taskTitle: taskTitle, property: property, sub: sub, placeholder: placeholder, confirmLabel: confirmLabel }).then(function (r) {
+        if (!r) return;
+        btn.disabled = true; btn.textContent = "Saving…";
+        fetch(WEB_APP_URL + "?action=update", { method: "POST", body: JSON.stringify({ id: taskId, property: property, task: taskTitle, status: status, note: r.note, by: actor, token: SECRET_TOKEN, source: "Dashboard" }) })
+          .then(function (resp) { return resp.json(); })
+          .then(function (res) {
+            if (res && res.ok) { setTimeout(function () { refreshTasks(); }, 200); }
+            else { alert("Could not save: " + ((res && (res.reason || res.error)) || "unknown error")); btn.disabled = false; btn.textContent = originalLabel; }
+          })
+          .catch(function (err) { alert("Network error: " + err.message); btn.disabled = false; btn.textContent = originalLabel; });
+      });
+    }
+  
+    function wireSWCActionButtons() {
+      const cfgs = [
+        { sel: ".btn-tricia",  status: "Tricia on it",  sub: "What are you working on for this task?",        placeholder: "e.g. Calling the vendor today, will update by Friday",      confirmLabel: "Save" },
+        { sel: ".btn-maya",    status: "Maya on it",    sub: "What are you working on for this task?",        placeholder: "e.g. Reached out to tenant, waiting on photo",            confirmLabel: "Save" },
+        { sel: ".btn-approve", status: "Approved",      sub: "What are you approving? (vendor, cost, plan...)",   placeholder: "e.g. Approved Mike’s quote of $400 for the faucet",  confirmLabel: "Approve" },
+        { sel: ".btn-done",    status: "Done",          sub: "Why is this done? What got resolved?",              placeholder: "e.g. Tenant confirmed leak fixed, photo received",        confirmLabel: "Mark Done" }
+      ];
+      cfgs.forEach(function (cfg) {
+        document.querySelectorAll(cfg.sel).forEach(function (btn) {
+          if (btn.dataset.wired === "1") return;
+          const fresh = btn.cloneNode(true);  // wipes SWC's listener
+          btn.parentNode.replaceChild(fresh, btn);
+          fresh.dataset.wired = "1";
+          fresh.addEventListener("click", function (e) {
+            e.preventDefault(); e.stopPropagation();
+            handleSWCAction(fresh, cfg.status, cfg.sub, cfg.placeholder, cfg.confirmLabel);
+          });
+        });
+      });
+    }
+  
     function wireFilterBar() {
     document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
       if (btn.dataset.wired === "1") return;
@@ -723,7 +798,8 @@ function escapeHtml(s) {
       wireArchiveButtons();
       wireGotitButtons();
       wireRemindExpandedButtons();
-      wireRejectModal(); }
+      wireRejectModal();
+      wireSWCActionButtons(); }
       catch (err) { console.error("[live-tasks] reWireWidget error:", err); }
     } else {
       console.warn("[live-tasks] window.tpsComms.wireTasks is not available — buttons may not respond. Check that the modified status-widget-client.js is loaded.");
