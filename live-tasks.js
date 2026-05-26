@@ -785,12 +785,11 @@ function escapeHtml(s) {
     function wireMoveHistoryToggle() {
       // Place SWC-appended chat-history INSIDE .task-expanded with the layout:
       //   ...task description / overlay / action buttons → chat thread → quick-note textarea → toggle (hide) at bottom.
-      // The thread is auto-shown when the card is expanded (CSS handles visibility); the toggle moves to the bottom and just hides it.
+      // SWC's own .open class controls visibility; the toggle hides/shows as the user expects.
       document.querySelectorAll(".task-item").forEach(function (item) {
         const expanded = item.querySelector(":scope > .task-expanded");
         if (!expanded) return;
         const noteSection = expanded.querySelector(":scope > .task-quick-note-section");
-        // Threads/lists go BEFORE the quick-note section (between buttons and textarea)
         const threadSelectors = [".tps-history-thread", ".tps-history-list", ".tps-chat", ".tps-chat-thread"];
         threadSelectors.forEach(function (sel) {
           const el = item.querySelector(":scope > " + sel);
@@ -800,13 +799,30 @@ function escapeHtml(s) {
             } else {
               expanded.appendChild(el);
             }
-            el.classList.add("open");
           }
         });
-        // Toggle moves to the BOTTOM of expanded
         const toggle = item.querySelector(":scope > .tps-history-toggle");
         if (toggle && toggle.parentNode === item) {
           expanded.appendChild(toggle);
+        }
+        // Auto-trigger SWC fetch when the card is expanded so the user never sees a stuck "Loading…".
+        // Watch this task-item's class list; when .expanded is added, simulate a toggle click
+        // (SWC's handler is what kicks off the history fetch and renders bubbles).
+        if (!item.__historyObs) {
+          const autoOpenIfNeeded = function () {
+            if (!item.classList.contains("expanded")) return;
+            const listEl = item.querySelector(".tps-history-list");
+            const toggleBtn = item.querySelector(".tps-history-toggle");
+            if (!listEl || !toggleBtn) return;
+            if (listEl.classList.contains("open")) return;
+            if (item.dataset.historyAutoOpened === "1") return;
+            item.dataset.historyAutoOpened = "1";
+            toggleBtn.click();
+          };
+          const obs = new MutationObserver(autoOpenIfNeeded);
+          obs.observe(item, { attributes: true, attributeFilter: ["class"] });
+          item.__historyObs = obs;
+          autoOpenIfNeeded();
         }
       });
     }
