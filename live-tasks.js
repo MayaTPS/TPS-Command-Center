@@ -289,15 +289,128 @@
     if (hour < 17) return "Good afternoon, " + name;
     return "Good evening, " + name;
   }
+  // ===== MESSAGE LIBRARY (Phase 12) =====
+  const MSG_KEY_LAST = "tps_msg_last";
+  const MSG_KEY_DIYK_IDX = "tps_diyk_idx";
+  const MSG_KEY_DIYK_LAST = "tps_diyk_last";
+  const MSG_GREETINGS = {
+    mondayMorning: [
+      "New week, fresh slate. Let’s see what needs your attention first.",
+      "Monday kick-off. Your board’s ready — let’s get moving."
+    ],
+    midweekMorning: [
+      "Good morning. Here’s where things stand — let’s keep the momentum going."
+    ],
+    fridayMorning: [
+      "Last day of the week. Let’s finish strong and head into the weekend lighter."
+    ],
+    fridayAfternoon: [
+      "Almost there. Close off what you can — Monday-you will thank you."
+    ],
+    weekend: [
+      "It’s the weekend — quick look at what’s waiting for Monday."
+    ],
+    evening: [
+      "Still going? Here’s a quick look before you wrap up for the night."
+    ]
+  };
+  const MSG_CARING = {
+    lunch: [
+      "It’s noon — step away from the screen. Grab some lunch. The tasks will still be here.",
+      "Midday check-in: have you eaten? Seriously. Close the laptop for 20 minutes."
+    ],
+    afternoon: [
+      "3pm slump is real. Quick stretch, glass of water — you’ll be sharper in 5 minutes.",
+      "Mid-afternoon. Before you dive back in — have you had water today?"
+    ],
+    evening: [
+      "Still working? You’ve put in a full day. Wrap up what you can and rest — tomorrow’s fresh.",
+      "It’s evening. Anything that can wait until morning — let it wait."
+    ],
+    earlyMorning: [
+      "Early bird! Before you dive in — take a breath, make a coffee. You’ve got this."
+    ]
+  };
+  const MSG_MOTIVATIONAL = {
+    monday: [
+      "Every task you close today is one less thing weighing on the rest of the week.",
+      "Pick one stuck item this morning. Clear it. Build from there."
+    ],
+    midweek: [
+      "Progress over perfection. A task moved forward is still a win.",
+      "You’re halfway through the week. What’s one thing that would make Friday feel lighter?"
+    ],
+    friday: [
+      "Done is better than perfect. Clear what you can and head into the weekend lighter."
+    ],
+    bigBoard: [
+      "Big board today. Pick one thing, finish it, and build momentum from there."
+    ],
+    general: [
+      "Raising the bar in industry standards — one task at a time."
+    ]
+  };
+  const MSG_DIYK = [
+    "Hit Remind Me on any task and pick a date. You’ll get a nudge when it’s time to follow up — so nothing falls through the cracks.",
+    "When you archive a task, it moves to the Archive tab in your sheet — not deleted. Every win is saved. Check it anytime.",
+    "Dashboard refreshes automatically every 5 minutes. Added something to the sheet just now? Hit Refresh to sync it instantly.",
+    "Use the filter bar to focus on just one status — great for quickly seeing what’s stuck or what needs approval without scrolling.",
+    "FYI tasks only need one thing from you: click Got it to acknowledge and clear it from the board.",
+    "The All Done box at the top shows your last 6 completed tasks — pulled live from the Archive tab. A good reminder of how much actually gets done.",
+    "Click the Maya/switch pill at the bottom-right to switch viewer between Maya and Tricia — your greeting and notes attribution will update.",
+    "The little stat chips at the top of the banner are live counts — red “X need approval” means action items on your plate right now."
+  ];
+  function pickFromPool(pool) {
+    if (!pool || !pool.length) return null;
+    if (pool.length === 1) return pool[0];
+    let last = null;
+    try { last = localStorage.getItem(MSG_KEY_LAST); } catch (e) {}
+    let pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick === last && pool.length > 1) pick = pool[(pool.indexOf(pick) + 1) % pool.length];
+    try { localStorage.setItem(MSG_KEY_LAST, pick); } catch (e) {}
+    return pick;
+  }
+  function pickDidYouKnow() {
+    let idx = 0;
+    try { const stored = localStorage.getItem(MSG_KEY_DIYK_IDX); if (stored !== null) idx = parseInt(stored, 10) || 0; } catch (e) {}
+    const tip = MSG_DIYK[idx % MSG_DIYK.length];
+    try {
+      localStorage.setItem(MSG_KEY_DIYK_IDX, String((idx + 1) % MSG_DIYK.length));
+      localStorage.setItem(MSG_KEY_DIYK_LAST, String(Date.now()));
+    } catch (e) {}
+    return tip;
+  }
+  function shouldShowDidYouKnow() {
+    try {
+      const last = localStorage.getItem(MSG_KEY_DIYK_LAST);
+      if (!last) return true;
+      const days = (Date.now() - parseInt(last, 10)) / (1000 * 60 * 60 * 24);
+      return days >= 3;
+    } catch (e) { return false; }
+  }
   function buildGreetingMessage(taskCount) {
     const now = new Date();
     const day = now.getDay();
     const hour = now.getHours();
-    if (day === 0 || day === 6) return "Quick look at what's on deck for next week.";
-    if (day === 1 && hour < 12) return "New week, fresh start. Here's what needs your attention first.";
-    if (day === 5) { if (hour < 12) return "Last day of the week — let's finish strong."; return "Almost there. Close off what you can — Monday-you will thank you."; }
-    if (taskCount > 8) return "Big board today. Pick one thing, finish it, build momentum from there.";
-    return "Here's where things stand — let's keep the momentum going.";
+    const min = now.getMinutes();
+    // 1) Caring time windows override everything
+    if (hour < 7) return pickFromPool(MSG_CARING.earlyMorning);
+    if ((hour === 11 && min >= 45) || hour === 12 || (hour === 13 && min <= 15)) return pickFromPool(MSG_CARING.lunch);
+    if (hour === 15) return pickFromPool(MSG_CARING.afternoon);
+    if (hour >= 18 && (hour > 18 || min >= 30)) return pickFromPool(MSG_CARING.evening);
+    // 2) Day-of-week messages
+    if (day === 0 || day === 6) return pickFromPool(MSG_GREETINGS.weekend);
+    if (day === 1 && hour < 12) return pickFromPool([].concat(MSG_GREETINGS.mondayMorning, MSG_MOTIVATIONAL.monday));
+    if (day === 5) {
+      if (hour < 12) return pickFromPool(MSG_GREETINGS.fridayMorning);
+      return pickFromPool([].concat(MSG_GREETINGS.fridayAfternoon, MSG_MOTIVATIONAL.friday));
+    }
+    // 3) High task count nudges toward big board
+    if (taskCount > 8) return pickFromPool(MSG_MOTIVATIONAL.bigBoard);
+    // 4) Did You Know rotates every 3 days
+    if (shouldShowDidYouKnow()) return pickDidYouKnow();
+    // 5) Default: midweek greeting/motivational pool
+    return pickFromPool([].concat(MSG_GREETINGS.midweekMorning, MSG_MOTIVATIONAL.midweek, MSG_MOTIVATIONAL.general));
   }
   function computeStatCounts(tasks) {
     let approval = 0, stuck = 0;
