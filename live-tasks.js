@@ -63,7 +63,17 @@
   };
 
   // ============================== HELPERS ==============================
-  function escapeHtml(s) {
+  // Status label normalization — cleaner display names (sheet data unchanged)
+var STATUS_LABEL_MAP = {
+  "Needs Approval": "Approval",
+  "FYI Only":       "FYI"
+};
+function normalizeStatusLabel(s) {
+  if (!s) return "";
+  return STATUS_LABEL_MAP[s] || s;
+}
+
+function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
     });
@@ -170,7 +180,7 @@
             propertyHtml +
           '</div>' +
           '<div class="task-status">' +
-            '<div class="task-status-badge ' + statusClass + '">' + escapeHtml(task.status) + '</div>' +
+            '<div class="task-status-badge ' + statusClass + '">' + escapeHtml(normalizeStatusLabel(task.status)) + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="task-expanded">' +
