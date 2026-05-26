@@ -491,137 +491,207 @@ function escapeHtml(s) {
     }
   }
 
-  function wireGotitButtons() {
-      document.querySelectorAll(".btn-gotit").forEach(function (btn) {
-        if (btn.dataset.wired === "1") return;
-        btn.dataset.wired = "1";
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          const taskItem = btn.closest(".task-item");
-          const taskId = taskItem ? taskItem.getAttribute("data-id") : null;
-          if (!taskId) return;
-          const titleEl = taskItem.querySelector(".task-title");
-          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
-          const propEl = taskItem.querySelector(".task-property");
-          const property = propEl ? propEl.textContent.trim() : "";
-          const step1 = confirm('Got it?\n\n"' + taskTitle + '"\n\nThis task stays in Maya\'s queue — it\'s not cancelled. This will disappear from your dashboard.');
-          if (!step1) return;
-          const note = prompt('Leave a note for Maya (optional)\n\nBefore this disappears, leave Maya a note if needed.\n\nTip: Tenant confirmed receipt, no further action needed.', '');
-          if (note === null) return;
-          const originalLabel = btn.textContent;
-          btn.disabled = true;
-          btn.textContent = "Saving…";
-          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
-          fetch(WEB_APP_URL + "?action=gotit", {
-            method: "POST",
-            body: JSON.stringify({ id: taskId, by: actor, token: SECRET_TOKEN, property: property, task: taskTitle, note: note })
-          })
-            .then(function (r) { return r.json(); })
-            .then(function (res) {
-              if (res && res.ok) {
-                if (taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
-                setTimeout(function () { refreshTasks(); }, 300);
-              } else {
-                alert("Could not acknowledge: " + ((res && (res.reason || res.error)) || "unknown error"));
+  // =============================================================
+    // Phase 07 — branded 2-step modal system (replaces browser prompt/confirm)
+    // =============================================================
+    function tpsEscapeHtml(s) {
+      return String(s == null ? "" : s).replace(/[&<>"\'`]/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "\'": "&#39;", "`": "&#96;" })[c];
+      });
+    }
+  
+    const MODAL_CONFIGS = {
+      archive: {
+        step1: { icon: "🗑", title: "Archive this task?", body: "You\'re cancelling this task. This is NOT the same as Done. It moves to the 📦 Archive tab, out of sight for good.", leftLabel: "Cancel", confirmLabel: "Discard task", confirmClass: "tps-mbtn-confirm-amber" },
+        step2: { icon: "💬", title: "Leave a note for Maya", body: "Why is this being archived?", placeholder: "e.g. Vendor resolved it directly — no further action needed.", required: true, leftLabel: "Back", confirmLabel: "Confirm archive", confirmClass: "tps-mbtn-confirm-amber" }
+      },
+      gotit: {
+        step1: { icon: "👁", title: "Got it?", body: "This task stays in Maya\'s queue — it\'s not cancelled. This will disappear from your dashboard.", leftLabel: "No", confirmLabel: "Yes", confirmClass: "tps-mbtn-confirm-neutral" },
+        step2: { icon: "💬", title: "Leave a note for Maya", body: "Before this disappears, leave Maya a note if needed.", placeholder: "Optional — e.g. Tenant confirmed receipt, no further action needed.", required: false, leftLabel: "Skip", confirmLabel: "Done", confirmClass: "tps-mbtn-confirm-neutral" }
+      },
+      reject: {
+        step1: { icon: "✗", title: "Reject this task?", body: "Maya will be notified, and this task will be removed from your dashboard.", leftLabel: "Cancel", confirmLabel: "Yes, reject", confirmClass: "tps-mbtn-confirm-danger" },
+        step2: { icon: "💬", title: "Leave a note for Maya", body: "Why is this being rejected?", placeholder: "e.g. Vendor quote too high — Maya to find alternatives.", required: true, leftLabel: "Back", confirmLabel: "Confirm reject", confirmClass: "tps-mbtn-confirm-danger" }
+      },
+      remind: {
+        step1: { icon: "⏰", title: "Set a reminder", body: "Pick a date and we\'ll remind you to follow up on this task.", datePicker: true, leftLabel: "Cancel", confirmLabel: "Set reminder", confirmClass: "tps-mbtn-confirm-gold" }
+      }
+    };
+  
+    function openTpsModal(opts) {
+      return new Promise(function (resolve) {
+        const cfg = MODAL_CONFIGS[opts.type];
+        if (!cfg) { resolve(null); return; }
+        const chip = (opts.property ? opts.property + " — " : "") + (opts.taskTitle || "");
+        const wrap = document.createElement("div");
+        wrap.className = "tps-modal-wrap";
+        wrap.innerHTML = '<div class="tps-modal"></div>';
+        document.body.appendChild(wrap);
+        const modal = wrap.querySelector(".tps-modal");
+        const stepData = {};
+  
+        function close(result) {
+          document.removeEventListener("keydown", onKey);
+          wrap.remove();
+          resolve(result);
+        }
+        function onKey(e) { if (e.key === "Escape") close(null); }
+        wrap.addEventListener("click", function (e) { if (e.target === wrap) close(null); });
+        document.addEventListener("keydown", onKey);
+  
+        function renderStep(n) {
+          const step = cfg["step" + n];
+          let html = "";
+          html += '<div class="tps-modal-icon">' + step.icon + '</div>';
+          html += '<div class="tps-modal-title">' + tpsEscapeHtml(step.title) + '</div>';
+          html += '<div class="tps-modal-chip">' + tpsEscapeHtml(chip) + '</div>';
+          if (step.body) html += '<div class="tps-modal-body">' + tpsEscapeHtml(step.body) + '</div>';
+          if (step.datePicker) {
+            const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(9, 0, 0, 0);
+            const pad = function (x) { return x < 10 ? "0" + x : x; };
+            const defVal = tom.getFullYear() + "-" + pad(tom.getMonth() + 1) + "-" + pad(tom.getDate()) + "T" + pad(tom.getHours()) + ":" + pad(tom.getMinutes());
+            html += '<input type="datetime-local" class="tps-modal-date" value="' + defVal + '">';
+          } else if (n === 2) {
+            html += '<textarea class="tps-modal-textarea" placeholder="' + tpsEscapeHtml(step.placeholder || "") + '"' + (step.required ? " required" : "") + '></textarea>';
+          }
+          html += '<div class="tps-modal-btns">';
+          const leftClass = (n === 1) ? "tps-mbtn-cancel" : "tps-mbtn-back";
+          html += '<button type="button" class="' + leftClass + '">' + tpsEscapeHtml(step.leftLabel) + '</button>';
+          html += '<button type="button" class="' + step.confirmClass + '">' + tpsEscapeHtml(step.confirmLabel) + '</button>';
+          html += '</div>';
+          modal.innerHTML = html;
+  
+          const leftBtn = modal.querySelector("." + leftClass);
+          const confirmBtn = modal.querySelector("." + step.confirmClass);
+          const textarea = modal.querySelector(".tps-modal-textarea");
+          const dateInput = modal.querySelector(".tps-modal-date");
+  
+          if (textarea && step.required) {
+            confirmBtn.disabled = true;
+            textarea.addEventListener("input", function () { confirmBtn.disabled = textarea.value.trim().length === 0; });
+          }
+          if (textarea) setTimeout(function () { textarea.focus(); }, 50);
+          else if (dateInput) setTimeout(function () { dateInput.focus(); }, 50);
+  
+          leftBtn.addEventListener("click", function () {
+            if (n === 1) close(null);
+            else if (opts.type === "gotit") { stepData.note = ""; close(stepData); }  // Skip on gotit step 2 = submit empty note
+            else renderStep(1);  // Back
+          });
+  
+          confirmBtn.addEventListener("click", function () {
+            if (textarea) stepData.note = textarea.value.trim();
+            if (dateInput) stepData.when = (dateInput.value || "").replace("T", " ");
+            if (cfg.step2 && n === 1) renderStep(2);
+            else close(stepData);
+          });
+        }
+  
+        renderStep(1);
+      });
+    }
+  
+    function handleActionClick(btn, modalType, apiAction) {
+      const taskItem = btn.closest(".task-item");
+      if (!taskItem) return;
+      const taskId = btn.getAttribute("data-task-id") || taskItem.getAttribute("data-id");
+      if (!taskId) return;
+      const titleEl = taskItem.querySelector(".task-title");
+      const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
+      const propEl = taskItem.querySelector(".task-property");
+      const property = propEl ? propEl.textContent.trim() : "";
+      const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
+      const originalLabel = btn.textContent;
+  
+      openTpsModal({ type: modalType, taskTitle: taskTitle, property: property }).then(function (result) {
+        if (!result) return;
+        btn.disabled = true;
+        btn.textContent = "Saving…";
+        let body;
+        if (apiAction === "remindMe") {
+          body = { id: taskId, title: (property ? property + " — " : "") + taskTitle, property: property, task: taskTitle, when: result.when, durationMin: 30, description: "Follow up on this task", by: actor, token: SECRET_TOKEN };
+        } else if (apiAction === "update") {
+          body = { id: taskId, property: property, task: taskTitle, status: "Rejected", note: result.note, by: actor, token: SECRET_TOKEN, source: "Dashboard" };
+        } else {
+          body = { id: taskId, by: actor, token: SECRET_TOKEN, property: property, task: taskTitle, note: result.note };
+        }
+        fetch(WEB_APP_URL + "?action=" + apiAction, { method: "POST", body: JSON.stringify(body) })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            const ok = res && (res.ok || res.eventId);
+            if (ok) {
+              if (apiAction === "remindMe") {
                 btn.disabled = false;
                 btn.textContent = originalLabel;
+                alert("Reminder set! Calendar event created.");
+              } else {
+                if (taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
+                setTimeout(function () { refreshTasks(); }, 300);
               }
-            })
-            .catch(function (err) {
-              alert("Network error: " + err.message);
+            } else {
+              alert("Could not complete action: " + ((res && (res.reason || res.error)) || "unknown error"));
               btn.disabled = false;
               btn.textContent = originalLabel;
-            });
+            }
+          })
+          .catch(function (err) {
+            alert("Network error: " + err.message);
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+          });
+      });
+    }
+  
+    function wireRejectModal() {
+      document.querySelectorAll(".btn-reject").forEach(function (btn) {
+        if (btn.dataset.wired === "1") return;
+        // Clone wipes SWC\'s existing click listener (Round 3 confirm + triggerAction)
+        const fresh = btn.cloneNode(true);
+        btn.parentNode.replaceChild(fresh, btn);
+        fresh.dataset.wired = "1";
+        fresh.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleActionClick(fresh, "reject", "update");
         });
       });
     }
+  
+    function wireGotitButtons() {
+    document.querySelectorAll(".btn-gotit").forEach(function (btn) {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleActionClick(btn, "gotit", "gotit");
+      });
+    });
+  }
   
     function wireRemindExpandedButtons() {
-      document.querySelectorAll(".btn-remind-expanded").forEach(function (btn) {
-        if (btn.dataset.wired === "1") return;
-        btn.dataset.wired = "1";
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          const taskItem = btn.closest(".task-item");
-          const taskId = taskItem ? taskItem.getAttribute("data-id") : null;
-          if (!taskId) return;
-          const titleEl = taskItem.querySelector(".task-title");
-          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
-          const propEl = taskItem.querySelector(".task-property");
-          const property = propEl ? propEl.textContent.trim() : "";
-          const tom = new Date();
-          tom.setDate(tom.getDate() + 1);
-          tom.setHours(9, 0, 0, 0);
-          const pad = function (n) { return n < 10 ? "0" + n : n; };
-          const defaultWhen = tom.getFullYear() + "-" + pad(tom.getMonth()+1) + "-" + pad(tom.getDate()) + " " + pad(tom.getHours()) + ":" + pad(tom.getMinutes());
-          const when = prompt('Set a reminder for this task:\n\n"' + taskTitle + '"\n\nPick date + time (YYYY-MM-DD HH:MM)\n(blank to cancel)', defaultWhen);
-          if (!when || !when.trim()) return;
-          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
-          const originalLabel = btn.textContent;
-          btn.disabled = true;
-          btn.textContent = "Setting…";
-          fetch(WEB_APP_URL + "?action=remindMe", {
-            method: "POST",
-            body: JSON.stringify({ id: taskId, title: (property ? property + " — " : "") + taskTitle, property: property, task: taskTitle, when: when, durationMin: 30, description: "Follow up on this task", by: actor, token: SECRET_TOKEN })
-          })
-            .then(function (r) { return r.json(); })
-            .then(function (res) {
-              btn.disabled = false;
-              btn.textContent = originalLabel;
-              if (res && res.ok) { alert("Reminder set! Calendar event created."); }
-              else { alert("Could not set reminder: " + ((res && (res.error || res.reason)) || "unknown error")); }
-            })
-            .catch(function (err) {
-              btn.disabled = false;
-              btn.textContent = originalLabel;
-              alert("Network error: " + err.message);
-            });
-        });
+    document.querySelectorAll(".btn-remind-expanded").forEach(function (btn) {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleActionClick(btn, "remind", "remindMe");
       });
-    }
+    });
+  }
   
     function wireArchiveButtons() {
-      document.querySelectorAll(".btn-archive").forEach(function (btn) {
-        if (btn.dataset.wired === "1") return;
-        btn.dataset.wired = "1";
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          const taskId = btn.getAttribute("data-task-id");
-          if (!taskId) return;
-          const taskItem = btn.closest(".task-item");
-          const titleEl = taskItem ? taskItem.querySelector(".task-title") : null;
-          const taskTitle = titleEl ? titleEl.textContent.trim() : taskId;
-          if (!confirm('Archive this task?\n\n"' + taskTitle + '"\n\nIt will move to the 📦 Archive tab and clear from the active board.')) return;
-          const originalLabel = btn.textContent;
-          btn.disabled = true;
-          btn.textContent = "Archiving…";
-          const actor = (typeof getViewerName === "function") ? getViewerName() : (localStorage.getItem(STORAGE_KEY_ACTOR) || DEFAULT_VIEWER_NAME);
-          fetch(WEB_APP_URL + "?action=archive", {
-            method: "POST",
-            body: JSON.stringify({ id: taskId, by: actor, token: SECRET_TOKEN })
-          })
-            .then(function (r) { return r.json(); })
-            .then(function (res) {
-              if (res && res.ok) {
-                if (taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
-                setTimeout(function () { refreshTasks(); }, 300);
-              } else {
-                alert("Could not archive: " + ((res && (res.reason || res.error)) || "unknown error"));
-                btn.disabled = false;
-                btn.textContent = originalLabel;
-              }
-            })
-            .catch(function (err) {
-              alert("Network error archiving: " + err.message);
-              btn.disabled = false;
-              btn.textContent = originalLabel;
-            });
-        });
+    document.querySelectorAll(".btn-archive").forEach(function (btn) {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleActionClick(btn, "archive", "archive");
       });
-    }
+    });
+  }
 
   // Global "coming soon" handler for Phase 06 Round 1 placeholder buttons (Got it, Remind me)
   if (!window.__tpsComingSoonWired) {
@@ -722,6 +792,7 @@ function escapeHtml(s) {
     wireArchiveButtons();
     wireGotitButtons();
     wireRemindExpandedButtons();
+    wireRejectModal();
 
     // Initial fetch
     refresh();
