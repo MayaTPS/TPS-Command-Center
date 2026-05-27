@@ -24,23 +24,32 @@
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
-    "Operations & Admin":      "tasks-operations-admin",
-    "Leasing & Marketing":     "tasks-leasing-marketing",
-    "Maintenance & Repairs":   "tasks-maintenance-repairs",
-    "Financials & Accounting": "tasks-financials-accounting",
-    "Tenant Relations":        "tasks-tenant-relations"
-  };
+    /* Order top-down matches Maya's Tricia-priority sort. New 10-category structure with all Maintenance subs routed to the existing Maintenance container. Legacy categories kept as fallbacks. */
+    "Financials & Accounting":     "tasks-financials-accounting",
+    "Operations & Admin":          "tasks-operations-admin",
+    "Tenant Relations":            "tasks-operations-admin",  /* legacy: fold into Ops */
+    "Maintenance & Repairs":       "tasks-maintenance-repairs",  /* legacy fallback */
+    "Maintenance — Electrical":   "tasks-maintenance-repairs",
+    "Maintenance — Plumbing":     "tasks-maintenance-repairs",
+    "Maintenance — HVAC":         "tasks-maintenance-repairs",
+    "Maintenance — Pest":         "tasks-maintenance-repairs",
+    "Maintenance — Appliance":    "tasks-maintenance-repairs",
+    "Maintenance — Landscape":    "tasks-maintenance-repairs",
+    "Maintenance — General":      "tasks-maintenance-repairs",
+    "Leasing & Marketing":         "tasks-leasing-marketing"
+  }
 
   // Render order within each category (matches handoff doc Phase 04 spec,
   // adjusted for current sheet status values)
   const STATUS_ORDER = [
-    "Stuck",
-    "Maya Needs Help",
-    "Needs Approval",
+    /* Maya's priority order: New on top, FYI at bottom. Within each section, tasks sort by this priority. */
     "New",
+    "Needs Approval",
+    "Maya Needs Help",
+    "Stuck",
     "In Progress",
     "FYI Only"
-  ];
+  ]
 
   // Status name → CSS class (matches existing status-widget.css + index.html styles)
   const STATUS_CLASS_MAP = {
