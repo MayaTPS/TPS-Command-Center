@@ -214,9 +214,11 @@ function escapeHtml(s) {
     Object.keys(CATEGORY_CONTAINERS).forEach(function (cat) { byCategory[cat] = {}; });
 
     tasks.forEach(function (task) {
-      const cat = (task.category && CATEGORY_CONTAINERS[task.category])
-        ? task.category
-        : "Operations & Admin"; // fall back if category unknown
+      var __rawCat = task.category || "";
+      var __normCat = __rawCat;
+      if (__rawCat.indexOf("Maintenance") === 0) __normCat = "Maintenance & Repairs";  /* route Maintenance - Pest / Maintenance - Electrical / etc. into the Maintenance section */
+      else if (__rawCat === "Tenant Relations") __normCat = "Operations & Admin";
+      const cat = CATEGORY_CONTAINERS[__normCat] ? __normCat : "Operations & Admin";
       if (!byCategory[cat]) byCategory[cat] = {};
       const status = task.status || task.sheetStatus || "New";
       if (!byCategory[cat][status]) byCategory[cat][status] = [];
