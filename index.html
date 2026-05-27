@@ -1129,10 +1129,14 @@
 
         <!-- FILTER BAR (Sprint 2 Phase 04 — client-side filter) -->
         <div class="tps-filter-empty-msg" id="tps-filter-empty-msg" style="display:none;">Nothing here — nice clean board ✨</div>
-        <div class="tps-filter-bar" id="tps-filter-bar" role="tablist" aria-label="Task view mode">
-            <button class="tps-filter-btn active" data-filter="all" role="tab" title="All tasks, sorted by priority (New on top, FYI at bottom)">All</button>
-            <button class="tps-filter-btn" data-filter="bundle-problem" role="tab" title="Group tasks by problem type for one-trip vendor dispatch">Bundle by problem</button>
-            <button class="tps-filter-btn" data-filter="bundle-property" role="tab" title="Group all tasks by building / property">Bundle by property</button>
+        <div class="tps-filter-bar" id="tps-filter-bar" role="tablist" aria-label="Task status filter">
+            <button class="tps-filter-btn active" data-filter="all" role="tab" title="Show every task across all statuses">All</button>
+            <button class="tps-filter-btn" data-filter="New" role="tab" title="Tasks just added — not yet triaged">New</button>
+            <button class="tps-filter-btn" data-filter="Needs Approval" role="tab" title="Waiting on your call before anyone moves">Approval</button>
+            <button class="tps-filter-btn" data-filter="In Progress" role="tab" title="Someone is actively working on these">In Progress</button>
+            <button class="tps-filter-btn" data-filter="Maya Needs Help" role="tab" title="Flagged for your input — Tricia (or you) need a decision">Maya Needs Help</button>
+            <button class="tps-filter-btn" data-filter="Stuck" role="tab" title="Blocked — needs attention to move forward">Stuck</button>
+            <button class="tps-filter-btn" data-filter="FYI Only" role="tab" title="Heads-up items — click Got it to clear">FYI</button>
         </div>
         <style>
             .tps-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 0 20px; margin-bottom: 8px; }
