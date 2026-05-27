@@ -24,18 +24,25 @@
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
-    /* Order top-down matches Maya's Tricia-priority sort. New 10-category structure with all Maintenance subs routed to the existing Maintenance container. Legacy categories kept as fallbacks. */
+    /* Tricia priority. New 10-category structure with all Maintenance subs routed to existing Maintenance container. Sheet uses regular hyphen-minus (Maintenance - Pest); em-dash variants kept as defensive fallbacks. */
     "Financials & Accounting":     "tasks-financials-accounting",
     "Operations & Admin":          "tasks-operations-admin",
-    "Tenant Relations":            "tasks-operations-admin",  /* legacy: fold into Ops */
-    "Maintenance & Repairs":       "tasks-maintenance-repairs",  /* legacy fallback */
-    "Maintenance — Electrical":   "tasks-maintenance-repairs",
-    "Maintenance — Plumbing":     "tasks-maintenance-repairs",
-    "Maintenance — HVAC":         "tasks-maintenance-repairs",
-    "Maintenance — Pest":         "tasks-maintenance-repairs",
-    "Maintenance — Appliance":    "tasks-maintenance-repairs",
-    "Maintenance — Landscape":    "tasks-maintenance-repairs",
-    "Maintenance — General":      "tasks-maintenance-repairs",
+    "Tenant Relations":            "tasks-operations-admin",
+    "Maintenance & Repairs":       "tasks-maintenance-repairs",
+    "Maintenance - Electrical":    "tasks-maintenance-repairs",
+    "Maintenance - Plumbing":      "tasks-maintenance-repairs",
+    "Maintenance - HVAC":          "tasks-maintenance-repairs",
+    "Maintenance - Pest":          "tasks-maintenance-repairs",
+    "Maintenance - Appliance":     "tasks-maintenance-repairs",
+    "Maintenance - Landscape":     "tasks-maintenance-repairs",
+    "Maintenance - General":       "tasks-maintenance-repairs",
+    "Maintenance — Electrical":    "tasks-maintenance-repairs",
+    "Maintenance — Plumbing":      "tasks-maintenance-repairs",
+    "Maintenance — HVAC":          "tasks-maintenance-repairs",
+    "Maintenance — Pest":          "tasks-maintenance-repairs",
+    "Maintenance — Appliance":     "tasks-maintenance-repairs",
+    "Maintenance — Landscape":     "tasks-maintenance-repairs",
+    "Maintenance — General":       "tasks-maintenance-repairs",
     "Leasing & Marketing":         "tasks-leasing-marketing"
   }
 
