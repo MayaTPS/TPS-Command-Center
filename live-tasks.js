@@ -234,7 +234,7 @@ function escapeHtml(s) {
         ? task.category
         : "Operations & Admin"; // fall back if category unknown
       if (!byCategory[cat]) byCategory[cat] = {};
-      const status = task.status || task.sheetStatus || "New";
+      const status = task.sheetStatus || task.status || "New";  /* sheet status first; overlay (Tricia on it / Maya on it / Got it / Approve) only kicks in if no sheet status */
       if (!byCategory[cat][status]) byCategory[cat][status] = [];
       byCategory[cat][status].push(task);
     });
