@@ -24,25 +24,23 @@
 
   // Category name → container ID in index.html
   const CATEGORY_CONTAINERS = {
-    /* Tricia priority order. ONE entry per container — normalizeCategoryForContainer maps maintenance subs and tenant relations to these base categories. */
-    "Financials & Accounting": "tasks-financials-accounting",
     "Operations & Admin":      "tasks-operations-admin",
-    "Maintenance & Repairs":   "tasks-maintenance-repairs",
     "Leasing & Marketing":     "tasks-leasing-marketing",
+    "Maintenance & Repairs":   "tasks-maintenance-repairs",
+    "Financials & Accounting": "tasks-financials-accounting",
     "Tenant Relations":        "tasks-tenant-relations"
-  }
+  };
 
   // Render order within each category (matches handoff doc Phase 04 spec,
   // adjusted for current sheet status values)
   const STATUS_ORDER = [
-    /* Maya's priority order: New on top, FYI at bottom. Within each section, tasks sort by this priority. */
-    "New",
-    "Needs Approval",
-    "Maya Needs Help",
     "Stuck",
+    "Maya Needs Help",
+    "Needs Approval",
+    "New",
     "In Progress",
     "FYI Only"
-  ]
+  ];
 
   // Status name → CSS class (matches existing status-widget.css + index.html styles)
   const STATUS_CLASS_MAP = {
@@ -216,12 +214,11 @@ function escapeHtml(s) {
     Object.keys(CATEGORY_CONTAINERS).forEach(function (cat) { byCategory[cat] = {}; });
 
     tasks.forEach(function (task) {
-      var rawCat = task.category || ""; var normCat = rawCat;
-      if (rawCat.indexOf("Maintenance") === 0) normCat = "Maintenance & Repairs";
-      else if (rawCat === "Tenant Relations") normCat = "Operations & Admin";
-      const cat = CATEGORY_CONTAINERS[normCat] ? normCat : "Operations & Admin";
+      const cat = (task.category && CATEGORY_CONTAINERS[task.category])
+        ? task.category
+        : "Operations & Admin"; // fall back if category unknown
       if (!byCategory[cat]) byCategory[cat] = {};
-      const status = task.sheetStatus || task.status || "New";  /* sheet status first; overlay (Tricia on it / Maya on it / Got it / Approve) only kicks in if no sheet status */
+      const status = task.status || task.sheetStatus || "New";
       if (!byCategory[cat][status]) byCategory[cat][status] = [];
       byCategory[cat][status].push(task);
     });
@@ -471,76 +468,28 @@ function escapeHtml(s) {
   function applyFilter(filter) {
     if (filter) currentFilter = filter;
     try { localStorage.setItem(STORAGE_KEY_FILTER, currentFilter); } catch (e) {}
-
     document.querySelectorAll(".tps-filter-btn").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-filter") === currentFilter);
+      if (btn.getAttribute("data-filter") === currentFilter) btn.classList.add("active");
+      else btn.classList.remove("active");
     });
-
     document.querySelectorAll(".task-item").forEach(function (item) {
-      item.classList.remove("filter-hidden");
+      if (currentFilter === "all") { item.classList.remove("filter-hidden"); return; }
+      const status = item.getAttribute("data-status") || "";
+      if (status === currentFilter) item.classList.remove("filter-hidden");
+      else item.classList.add("filter-hidden");
     });
-
-    var bundleContainer = document.getElementById("tps-bundle-view");
-    if (!bundleContainer) {
-      bundleContainer = document.createElement("div");
-      bundleContainer.id = "tps-bundle-view";
-      bundleContainer.style.display = "none";
-      var filterBar = document.getElementById("tps-filter-bar");
-      if (filterBar && filterBar.parentNode) {
-        filterBar.parentNode.insertBefore(bundleContainer, filterBar.nextSibling);
-      }
-    }
-
-    if (currentFilter === "bundle-property" || currentFilter === "bundle-problem") {
-      document.querySelectorAll(".category-section").forEach(function (s) { if (!s.classList.contains("bundle-group")) s.style.display = "none"; });
-      var allTasks = Array.from(document.querySelectorAll(".category-section:not(.bundle-group) .task-item"));
-      var groups = {};
-      allTasks.forEach(function (task) {
-        var key;
-        if (currentFilter === "bundle-property") {
-          var propEl = task.querySelector(".task-property");
-          key = propEl ? propEl.textContent.trim() : "(no property)";
-        } else {
-          var dataCat = task.getAttribute("data-category");
-          if (dataCat) { key = dataCat; } else {
-            var parentSection = task.closest(".category-section");
-            var titleEl = parentSection ? parentSection.querySelector(".category-title, h2") : null;
-            key = titleEl ? titleEl.textContent.trim() : "(uncategorized)";
-          }
-        }
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(task);
-      });
-      var keys = Object.keys(groups).sort();
-      bundleContainer.innerHTML = "";
-      keys.forEach(function (key) {
-        var groupEl = document.createElement("div");
-        groupEl.className = "category-section bundle-group";
-        groupEl.innerHTML = '<h2 class=\"category-title\">' + escapeHtml(key) + ' <span style=\"font-size:12px;color:#9a9a9a;font-weight:500;\">' + groups[key].length + ' task' + (groups[key].length > 1 ? "s" : "") + '</span></h2>';
-        var tasksDiv = document.createElement("div");
-        tasksDiv.className = "category-tasks";
-        groups[key].forEach(function (task) {
-          var clone = task.cloneNode(true);
-          clone.classList.add("bundle-clone");
-          tasksDiv.appendChild(clone);
-        });
-        groupEl.appendChild(tasksDiv);
-        bundleContainer.appendChild(groupEl);
-      });
-      bundleContainer.style.display = "block";
-    } else {
-      document.querySelectorAll(".category-section").forEach(function (s) { if (!s.classList.contains("bundle-group")) s.style.display = ""; });
-      bundleContainer.style.display = "none";
-    }
-
-    var any = document.querySelectorAll(".task-item:not(.filter-hidden)").length > 0;
-    var msg = document.getElementById("tps-filter-empty-msg");
-    if (msg) msg.style.display = any ? "none" : "block";
     document.querySelectorAll(".category-section").forEach(function (section) {
-      if (section.classList.contains("bundle-group")) return;
-      var visible = section.querySelectorAll(".task-item:not(.filter-hidden)").length;
-      section.classList.toggle("category-empty", visible === 0);
+      const visibleTasks = section.querySelectorAll(".task-item:not(.filter-hidden)").length;
+      if (currentFilter === "all" || visibleTasks > 0) section.classList.remove("filter-empty");
+      else section.classList.add("filter-empty");
     });
+  
+    // Win #3: show friendly empty state when filter has zero matches
+    const emptyMsg = document.getElementById("tps-filter-empty-msg");
+    if (emptyMsg) {
+      const totalVisible = document.querySelectorAll(".task-item:not(.filter-hidden)").length;
+      emptyMsg.style.display = (currentFilter !== "all" && totalVisible === 0) ? "" : "none";
+    }
   }
 
   // =============================================================
