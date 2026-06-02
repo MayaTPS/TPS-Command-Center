@@ -1332,9 +1332,11 @@
     </script>
 
     <!-- Silent comms widget (handles button clicks + Add Task wizard) -->
-    <script src="status-widget-client.js"></script>
+    
 
     <!-- Live tasks (Sprint 1 Phase 1A — replaces Python rebuild with client-side fetch) -->
-    <script src="live-tasks.js"></script>
+    <script>
+(function(){var t=Date.now();["status-widget-client.js","live-tasks.js"].forEach(function(src){var s=document.createElement("script");s.src=src+"?t="+t;s.async=false;document.head.appendChild(s);});})();
+</script>
 </body>
 </html>
