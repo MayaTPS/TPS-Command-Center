@@ -214,7 +214,7 @@ function escapeHtml(s) {
     Object.keys(CATEGORY_CONTAINERS).forEach(function (cat) { byCategory[cat] = {}; });
 
     tasks.forEach(function (task) {
-      if (task.status === "Done" || task.sheetStatus === "Done") return;
+      if (task.status === "Done" || task.sheetStatus === "Done" || (window.__tpsPendingHide && window.__tpsPendingHide[task.id])) return;
       var __rawCat = task.category || "";
       var __normCat = __rawCat;
       if (__rawCat.indexOf("Maintenance") === 0) __normCat = "Maintenance & Repairs";  /* route Maintenance - Pest / Maintenance - Electrical / etc. into the Maintenance section */
@@ -754,13 +754,14 @@ function escapeHtml(s) {
       openNoteModal({ taskTitle: taskTitle, property: property, sub: sub, placeholder: placeholder, confirmLabel: confirmLabel }).then(function (r) {
         if (!r) return;
         btn.disabled = true; btn.textContent = "Saving…";
+        if (status === "Done" && taskItem) { window.__tpsPendingHide = window.__tpsPendingHide || {}; window.__tpsPendingHide[taskId] = true; taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; }
         fetch(WEB_APP_URL + "?action=update", { method: "POST", body: JSON.stringify({ id: taskId, property: property, task: taskTitle, status: status, note: r.note, by: actor, token: SECRET_TOKEN, source: "Dashboard" }) })
           .then(function (resp) { return resp.json(); })
           .then(function (res) {
-            if (res && res.ok) { if (status === "Done" && taskItem) { taskItem.style.transition = "opacity 250ms"; taskItem.style.opacity = "0"; } setTimeout(function () { refresh(); }, status === "Done" ? 320 : 200); }
-            else { alert("Could not save: " + ((res && (res.reason || res.error)) || "unknown error")); btn.disabled = false; btn.textContent = originalLabel; }
+            if (res && res.ok) { setTimeout(function () { if (status === "Done" && window.__tpsPendingHide) delete window.__tpsPendingHide[taskId]; refresh(); }, 200); }
+            else { if (status === "Done" && taskItem) { if (window.__tpsPendingHide) delete window.__tpsPendingHide[taskId]; taskItem.style.opacity = "1"; } alert("Could not save: " + ((res && (res.reason || res.error)) || "unknown error")); btn.disabled = false; btn.textContent = originalLabel; }
           })
-          .catch(function (err) { alert("Network error: " + err.message); btn.disabled = false; btn.textContent = originalLabel; });
+          .catch(function (err) { if (status === "Done" && taskItem) { if (window.__tpsPendingHide) delete window.__tpsPendingHide[taskId]; taskItem.style.opacity = "1"; } alert("Network error: " + err.message); btn.disabled = false; btn.textContent = originalLabel; });
       });
     }
   
