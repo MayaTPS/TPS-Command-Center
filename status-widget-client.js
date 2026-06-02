@@ -341,39 +341,73 @@
   // ============================== ADD TASK WIZARD ==============================
   function openAddTaskWizard() {
     ensureActor().then(function (actor) {
-      const state = { step: 0, property: "", task: "", notes: "", category: "", priority: "", assignedTo: actor };
-      const steps = [renderStepProperty, renderStepTask, renderStepNotes, renderStepCategory, renderStepPriority, renderStepAssign, renderStepReview];
       const wrapper = document.createElement("div");
       openModal(wrapper);
-      function go(delta) { state.step = Math.max(0, Math.min(steps.length - 1, state.step + delta)); render(); }
-      function setAndNext(key, val) { if (key) state[key] = val; if (state.step < steps.length - 1) go(1); else submit(); }
-      function render() {
-        wrapper.innerHTML = "";
-        const prog = document.createElement("div");
-        prog.className = "tps-wiz-progress";
-        prog.textContent = "Step " + (state.step + 1) + " of " + steps.length;
-        wrapper.appendChild(prog);
-        steps[state.step](wrapper, state, setAndNext, go);
+      const catOpts = CATEGORIES.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join("");
+      const priOpts = PRIORITIES.map(function (p) { return '<option value="' + escapeHtml(p.value) + '">' + p.emoji + ' ' + escapeHtml(p.label) + '</option>'; }).join("");
+      const asgOpts = ["Maya", "Tricia", "Craig", "Unassigned"].map(function (n) { return '<option value="' + escapeHtml(n) + '"' + (n === actor ? ' selected' : '') + '>' + escapeHtml(n) + '</option>'; }).join("");
+      wrapper.innerHTML =
+        '<h2>Add a task</h2>' +
+        '<p class="tps-modal-sub">Fill in what you know, then hit Save.</p>' +
+        '<label class="tps-remind-label">Property</label>' +
+        '<div class="tps-typeahead-wrap"><input type="text" class="tps-wiz-field" id="tps-prop-input" placeholder="Type to search..." autocomplete="off" />' +
+        '<div class="tps-typeahead-list" id="tps-prop-list" style="display:none;"></div></div>' +
+        '<label class="tps-remind-label">Task</label>' +
+        '<input type="text" class="tps-wiz-field" id="tps-task-input" placeholder="e.g. Replace bathroom faucet" autocomplete="off" />' +
+        '<label class="tps-remind-label">Notes <span style="font-weight:400;color:#9ca3af;">(optional)</span></label>' +
+        '<textarea class="tps-wiz-field" id="tps-notes-input" placeholder="Add detail, vendor name, deadline..."></textarea>' +
+        '<label class="tps-remind-label">Category</label>' +
+        '<select class="tps-wiz-field" id="tps-cat-input"><option value="">Choose...</option>' + catOpts + '</select>' +
+        '<label class="tps-remind-label">Priority</label>' +
+        '<select class="tps-wiz-field" id="tps-pri-input"><option value="">Choose...</option>' + priOpts + '</select>' +
+        '<label class="tps-remind-label">Assign to</label>' +
+        '<select class="tps-wiz-field" id="tps-asg-input">' + asgOpts + '</select>' +
+        '<div class="tps-wiz-actions"><button class="tps-wiz-btn secondary" id="tps-cancel">Cancel</button><button class="tps-wiz-btn primary" id="tps-save" disabled>Save task</button></div>';
+      const propInput = wrapper.querySelector("#tps-prop-input");
+      const propList = wrapper.querySelector("#tps-prop-list");
+      const taskInput = wrapper.querySelector("#tps-task-input");
+      const saveBtn = wrapper.querySelector("#tps-save");
+      function validate() { saveBtn.disabled = !(PROPERTIES.includes(propInput.value.trim()) && taskInput.value.trim()); }
+      function showList(items) {
+        propList.innerHTML = "";
+        items.slice(0, 30).forEach(function (p) {
+          const it = document.createElement("div");
+          it.className = "tps-typeahead-item";
+          it.textContent = p;
+          it.addEventListener("click", function () { propInput.value = p; propList.style.display = "none"; validate(); });
+          propList.appendChild(it);
+        });
+        propList.style.display = items.length ? "block" : "none";
       }
-      function submit() {
-        wrapper.innerHTML = '<h2>Adding task…</h2><p class="tps-modal-sub">One moment.</p>';
-        postAddTask({ property: state.property, task: state.task, notes: state.notes, category: state.category, priority: state.priority, assignedTo: state.assignedTo, by: actor })
+      propInput.addEventListener("focus", function () { showList(PROPERTIES); });
+      propInput.addEventListener("input", function () {
+        const q = propInput.value.trim().toLowerCase();
+        showList(!q ? PROPERTIES : PROPERTIES.filter(function (p) { return p.toLowerCase().indexOf(q) > -1; }));
+        validate();
+      });
+      propInput.addEventListener("blur", function () { setTimeout(function () { propList.style.display = "none"; }, 150); });
+      taskInput.addEventListener("input", validate);
+      wrapper.querySelector("#tps-cancel").addEventListener("click", closeModal);
+      saveBtn.addEventListener("click", function () {
+        const data = { property: propInput.value.trim(), task: taskInput.value.trim(), notes: wrapper.querySelector("#tps-notes-input").value.trim(), category: wrapper.querySelector("#tps-cat-input").value, priority: wrapper.querySelector("#tps-pri-input").value, assignedTo: wrapper.querySelector("#tps-asg-input").value };
+        if (!PROPERTIES.includes(data.property) || !data.task) return;
+        wrapper.innerHTML = '<h2>Adding task...</h2><p class="tps-modal-sub">One moment.</p>';
+        postAddTask({ property: data.property, task: data.task, notes: data.notes, category: data.category, priority: data.priority, assignedTo: data.assignedTo, by: actor })
           .then(function (res) {
             if (res && res.ok) {
-              wrapper.innerHTML = '<h2>✓ Task added</h2><p class="tps-modal-sub">It\'s now in the Operations Log. It will appear on the dashboard at the next 1pm refresh.</p><div class="tps-wiz-actions"><span></span><button class="tps-wiz-btn primary" id="tps-done">Done</button></div>';
+              wrapper.innerHTML = '<h2>\u2713 Task added</h2><p class="tps-modal-sub">It\'s now in the Operations Log. Hit Refresh on the dashboard to see it.</p><div class="tps-wiz-actions"><span></span><button class="tps-wiz-btn primary" id="tps-done">Done</button></div>';
               wrapper.querySelector("#tps-done").addEventListener("click", closeModal);
-              cacheNewTask(state);
+              cacheNewTask(data);
             } else {
-              wrapper.innerHTML = '<h2>Couldn\'t save</h2><p class="tps-modal-sub">' + ((res && res.error) || "Network issue") + '</p><div class="tps-wiz-actions"><button class="tps-wiz-btn secondary" id="tps-back">Try again</button><button class="tps-wiz-btn primary" id="tps-close">Close</button></div>';
-              wrapper.querySelector("#tps-back").addEventListener("click", function () { state.step = steps.length - 1; render(); });
+              wrapper.innerHTML = '<h2>Couldn\'t save</h2><p class="tps-modal-sub">' + ((res && res.error) || "Network issue") + '</p><div class="tps-wiz-actions"><span></span><button class="tps-wiz-btn primary" id="tps-close">Close</button></div>';
               wrapper.querySelector("#tps-close").addEventListener("click", closeModal);
             }
           }).catch(function () {
             wrapper.innerHTML = '<h2>Network problem</h2><p class="tps-modal-sub">Couldn\'t reach the spreadsheet. Try again in a moment.</p><div class="tps-wiz-actions"><span></span><button class="tps-wiz-btn primary" id="tps-close">Close</button></div>';
             wrapper.querySelector("#tps-close").addEventListener("click", closeModal);
           });
-      }
-      render();
+      });
+      setTimeout(function () { propInput.focus(); }, 50);
     });
   }
 
