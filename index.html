@@ -26,7 +26,7 @@
       if(statusWrap){ var flag=item.querySelector(".tps-note-flag"); if(hasNote && !flag){var s=document.createElement("span");s.className="tps-note-flag";s.title="Has a note";s.innerHTML=NOTE_SVG;statusWrap.insertBefore(s,statusWrap.firstChild);} else if(!hasNote && flag){flag.remove();} if(btn && statusWrap.lastElementChild!==btn){statusWrap.appendChild(btn);} }
       if(row && btn && !row.dataset.tpsClick){ row.dataset.tpsClick="1"; row.addEventListener("click",function(e){ if(e.target.closest("button,a,input,textarea,select,.tps-note-flag,.task-expanded"))return; e.stopPropagation(); btn.click(); }); }
     }); }
-    process(); var obs=new MutationObserver(function(){clearTimeout(window.__tpsT);window.__tpsT=setTimeout(process,120);}); obs.observe(document.body,{childList:true,subtree:true});
+    function __tpsInit(){ process(); var obs=new MutationObserver(function(){clearTimeout(window.__tpsT);window.__tpsT=setTimeout(process,120);}); obs.observe(document.documentElement,{childList:true,subtree:true}); } if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",__tpsInit);}else{__tpsInit();}
   } catch(err){ console.error("TPS enhancements error:",err);} })();
   </script>
     <meta charset="UTF-8">
