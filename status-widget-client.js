@@ -850,7 +850,7 @@
         if (!n) { toast("Note is empty", false); return; }
         // Preserve the current task status — the gold "Note added" badge already signals a note was added,
         // so we don't want Save Note to overwrite the real status (In Progress, Approval, etc.).
-        const currentStatus = (task.dataset && task.dataset.status) || "Note added";
+        const __badgeEl = task.querySelector(".task-status-badge"); const currentStatus = (task.dataset && task.dataset.status) || (__badgeEl ? __badgeEl.textContent.trim() : "") || "In Progress";
         send(task, currentStatus, n).then(function () { if (ta) ta.value = ""; });
       });
     });
