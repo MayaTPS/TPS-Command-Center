@@ -148,9 +148,9 @@ function escapeHtml(s) {
       buttonsHtml =
         '<button class="btn-outlined btn-approve">Approve</button>' +
         '<button class="btn-outlined btn-reject">Reject</button>' +
-        triciaBtn + archiveBtn;
+        triciaBtn + doneBtn + archiveBtn;
     } else if (rawStatus === "New") {
-      buttonsHtml = triciaBtn + mayaBtn + remindBtn + archiveBtn;
+      buttonsHtml = triciaBtn + mayaBtn + remindBtn + doneBtn + archiveBtn;
     } else if (ACTIVE_WORK.indexOf(rawStatus) !== -1) {
       buttonsHtml = doneBtn + remindBtn + archiveBtn;
     } else if (rawStatus === "Maya Needs Help") {
