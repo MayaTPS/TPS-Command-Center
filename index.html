@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- TPS card enhancements (added 2026-06-02) - additive; safe to remove this whole block to revert -->
+  <style id="tps-enhance-style">
+    body.dark-mode .task-property { color:#c2c2c2 !important; }
+    body.dark-mode .task-status-badge.status-fyi { color:#e0e0e0 !important; background:rgba(190,190,190,0.20) !important; border-color:#9a9a9a !important; }
+    .task-row { display:flex !important; align-items:center !important; gap:12px !important; cursor:pointer !important; position:relative !important; }
+    .task-info { flex:1 1 auto !important; min-width:0 !important; padding-right:0 !important; }
+    .task-title { min-width:0 !important; overflow-wrap:anywhere !important; }
+    .task-status { position:static !important; flex-shrink:0 !important; display:flex !important; align-items:center !important; gap:10px !important; }
+    .task-status-badge { flex-shrink:0 !important; }
+    .task-status > .task-expand-btn { flex-shrink:0 !important; font-size:0.95em !important; opacity:0.7 !important; }
+    .task-status > .task-expand-btn:hover { opacity:1 !important; }
+    .tps-note-flag { flex-shrink:0 !important; display:inline-flex !important; align-items:center !important; color:var(--tps-yellow,#CBB067) !important; }
+    .tps-note-flag svg { display:block !important; }
+  </style>
+  <script>
+  (function(){ try {
+    var MAP={"Needs Approval":"status-approval","Approval":"status-approval","Maya Needs Help":"status-maya-help","New":"status-new","In Progress":"status-in-progress","Stuck":"status-stuck","FYI Only":"status-fyi","FYI":"status-fyi","Tricia on it":"status-in-progress","Maya on it":"status-in-progress","Craig on it":"status-in-progress","Approved":"status-approval","On Hold":"status-in-progress","Rejected":"status-stuck","Done":"status-fyi","Note added":"status-fyi"};
+    var NOTE_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3z"/></svg>';
+    function process(){ document.querySelectorAll(".task-item").forEach(function(item){
+      var status=(item.dataset.status||"").trim(); var hasNote=!!((item.dataset.overlayNote||"").trim());
+      var row=item.querySelector(".task-row"); var badge=item.querySelector(".task-status-badge"); var statusWrap=item.querySelector(".task-status"); var btn=item.querySelector(".task-expand-btn");
+      if(badge && MAP[status]){ Array.prototype.slice.call(badge.classList).forEach(function(c){if(c.indexOf("status-")===0)badge.classList.remove(c);}); badge.classList.add(MAP[status]); badge.textContent=(status==="FYI Only"?"FYI":status); }
+      if(statusWrap){ var flag=item.querySelector(".tps-note-flag"); if(hasNote && !flag){var s=document.createElement("span");s.className="tps-note-flag";s.title="Has a note";s.innerHTML=NOTE_SVG;statusWrap.insertBefore(s,statusWrap.firstChild);} else if(!hasNote && flag){flag.remove();} if(btn && statusWrap.lastElementChild!==btn){statusWrap.appendChild(btn);} }
+      if(row && btn && !row.dataset.tpsClick){ row.dataset.tpsClick="1"; row.addEventListener("click",function(e){ if(e.target.closest("button,a,input,textarea,select,.tps-note-flag,.task-expanded"))return; e.stopPropagation(); btn.click(); }); }
+    }); }
+    process(); var obs=new MutationObserver(function(){clearTimeout(window.__tpsT);window.__tpsT=setTimeout(process,120);}); obs.observe(document.body,{childList:true,subtree:true});
+  } catch(err){ console.error("TPS enhancements error:",err);} })();
+  </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- iOS Add to Home Screen — install as a fullscreen app on iPhone -->
