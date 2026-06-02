@@ -27,8 +27,7 @@
     "Operations & Admin":      "tasks-operations-admin",
     "Leasing & Marketing":     "tasks-leasing-marketing",
     "Maintenance & Repairs":   "tasks-maintenance-repairs",
-    "Financials & Accounting": "tasks-financials-accounting",
-    "Tenant Relations":        "tasks-tenant-relations"
+    "Financials & Accounting": "tasks-financials-accounting"
   };
 
   // Render order within each category (matches handoff doc Phase 04 spec,
