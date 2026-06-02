@@ -13,6 +13,7 @@
   const KNOWN_ACTORS = ["Maya", "Tricia", "Craig"];
 
   const PROPERTIES = [
+    "General / No specific property","Personal Task",
     "17 Mayflower","17 Mayflower, Unit Lower","17 Mayflower, Unit 1",
     "Britannia","Britannia, Unit 1","Britannia, Unit 2",
     "Deschene","Deschene, Unit 1",
@@ -353,7 +354,7 @@
         '<div class="tps-typeahead-wrap"><input type="text" class="tps-wiz-field" id="tps-prop-input" placeholder="Type to search..." autocomplete="off" />' +
         '<div class="tps-typeahead-list" id="tps-prop-list" style="display:none;"></div></div>' +
         '<label class="tps-remind-label">Task</label>' +
-        '<input type="text" class="tps-wiz-field" id="tps-task-input" placeholder="e.g. Replace bathroom faucet" autocomplete="off" />' +
+        '<input type="text" class="tps-wiz-field" id="tps-task-input" placeholder="e.g. Replace the leaking kitchen faucet and check the cabinet for water damage" autocomplete="off" />' +
         '<label class="tps-remind-label">Notes <span style="font-weight:400;color:#9ca3af;">(optional)</span></label>' +
         '<textarea class="tps-wiz-field" id="tps-notes-input" placeholder="Add detail, vendor name, deadline..."></textarea>' +
         '<label class="tps-remind-label">Category</label>' +
@@ -447,7 +448,7 @@
   function renderStepTask(wrap, state, setAndNext, go) {
     wrap.insertAdjacentHTML("beforeend",
       '<h2 class="tps-wiz-question">What\'s the task?</h2>' +
-      '<input type="text" class="tps-wiz-field" id="tps-task-input" placeholder="e.g. Replace bathroom faucet" autocomplete="off" />' +
+      '<input type="text" class="tps-wiz-field" id="tps-task-input" placeholder="e.g. Replace the leaking kitchen faucet and check the cabinet for water damage" autocomplete="off" />' +
       '<div class="tps-wiz-actions"><button class="tps-wiz-btn secondary" id="tps-back">← Back</button><button class="tps-wiz-btn primary" id="tps-next" disabled>Next →</button></div>');
     const input = wrap.querySelector("#tps-task-input");
     const next = wrap.querySelector("#tps-next");
