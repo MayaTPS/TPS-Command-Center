@@ -14,7 +14,15 @@
     .task-status > .task-expand-btn:hover { opacity:1 !important; }
     .tps-note-flag { flex-shrink:0 !important; display:inline-flex !important; align-items:center !important; color:var(--tps-yellow,#CBB067) !important; }
     .tps-note-flag svg { display:block !important; }
-  </style>
+          .company-exp-btn {
+            background: linear-gradient(180deg, hsla(0, 0%, 100%, .15), hsla(0, 0%, 100%, 0)), #CBB067;
+            border-color: #B89A4E;
+        }
+        .company-exp-btn:hover {
+            box-shadow: 0 4px 12px rgba(203, 176, 103, 0.4);
+        }
+        .card-icon svg { display: inline-block; vertical-align: middle; }
+    </style>
   <script>
   (function(){ try {
     var MAP={"Needs Approval":"status-approval","Approval":"status-approval","Maya Needs Help":"status-maya-help","New":"status-new","In Progress":"status-in-progress","Stuck":"status-stuck","FYI Only":"status-fyi","FYI":"status-fyi","Tricia on it":"status-in-progress","Maya on it":"status-in-progress","Craig on it":"status-in-progress","Approved":"status-approval","On Hold":"status-in-progress","Rejected":"status-stuck","Done":"status-fyi","Note added":"status-fyi"};
@@ -1118,17 +1126,18 @@
         <!-- QUICK ACTION CARDS (Sprint 2 Phase 03 — Clock In, Upload, Add Task, Calendly) -->
         <div class="quick-cards">
             <div class="quick-card">
-                <div class="card-icon">⏰</div>
-                <div class="card-title">Clock In</div>
-                <div class="card-subtitle">Time log + billing</div>
-                <a href="https://mayatps.github.io/Timesheet/" target="_blank" class="unified-btn clock-btn">
-                    <span>Clock In</span>
+                <div class="card-icon"><svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 12a4 4 0 0 1 4-4h10l4 5h18a4 4 0 0 1 4 4v3H4z" fill="#B89A4E"/><rect x="4" y="16" width="40" height="26" rx="4" fill="#CBB067"/><rect x="18" y="21" width="12" height="15" rx="1.5" fill="#fff"/><path d="M21 25h6M21 28.5h6M21 32h4" stroke="#B89A4E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                <div class="card-title">Company Expense</div>
+                <div class="card-subtitle">Non-property receipts</div>
+                <a href="https://drive.google.com/drive/folders/1ENyP5fHWcOAQMlufe97vepzmlE4DBvkq" target="_blank" class="unified-btn upload-btn company-exp-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Upload</span>
                 </a>
             </div>
             <div class="quick-card">
-                <div class="card-icon">📁</div>
-                <div class="card-title">Upload Files</div>
-                <div class="card-subtitle">Docs & photos</div>
+                <div class="card-icon"><svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 12a4 4 0 0 1 4-4h10l4 5h18a4 4 0 0 1 4 4v3H4z" fill="#82566F"/><rect x="4" y="16" width="40" height="26" rx="4" fill="#9B6B8A"/><path d="M24 21l8 6.5V36h-5v-5h-6v5h-5v-8.5z" fill="#fff"/></svg></div>
+                <div class="card-title">Property Expense</div>
+                <div class="card-subtitle">Supplies &amp; materials</div>
                 <a href="https://drive.google.com/drive/folders/1udSCvVZGOu7A1faxH65xQHF9kghy1_o4" target="_blank" class="unified-btn upload-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     <span>Upload</span>
